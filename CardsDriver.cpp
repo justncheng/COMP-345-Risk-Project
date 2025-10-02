@@ -1,20 +1,5 @@
 #include "Cards.h"
 
-// Temporary mock classes to allow testing
-class Territory {
-public:
-    string name = "TestLand";
-};
-
-class Player {
-public:
-    OrdersList* orderList = nullptr;
-    Hand* hand = new Hand();
-
-    Player() = default;
-    ~Player() { delete hand; }
-};
-
 /**
  * @brief Simulates drawing, playing, and recycling cards.
  */
@@ -32,7 +17,7 @@ void testCards() {
     // Draw all 5 into the player's hand
     for (int i = 0; i < 5; ++i) {
         auto card = deck->draw();
-        if (card) player->hand->addCard(move(card));
+        if (card) player->getHand()->addCard(move(card));
     }
 
     // Dummy contexts for each card
@@ -45,7 +30,7 @@ void testCards() {
     }
 
     cout << "\n=== Playing All Cards ===" << endl;
-    player->hand->playAll(player, deck, contexts);
+    player->getHand()->playAll(player, deck, contexts);
     cout << "\nDeck size after play: " << deck->size() << endl;
 
     // Cleanup dummy territories/players
@@ -59,12 +44,5 @@ void testCards() {
     delete deck;
 }
 
-/**
- * @brief Main entry point to run card test.
- */
-int main() {
-    testCards();
-    return 0;
-}
 
 

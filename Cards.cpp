@@ -1,6 +1,7 @@
 ﻿#include "Cards.h"
 #include <cstdlib>
 #include <ctime>
+#include <algorithm>
 
 // --------------------- Card Implementation -----------------------
 

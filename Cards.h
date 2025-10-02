@@ -6,14 +6,17 @@
 #include <memory>
 #include <string>
 
+#include "Map.h"
+#include "Player.h"
+#include "Orders.h"
+
 using namespace std;
 
 // Forward declarations to avoid circular dependency.
-// Replace with #include "Player.h" and "Orders.h" when available.
-class Player;
-class OrdersList;
-class Order;
 class Territory;
+class Player;
+class Order;
+class OrdersList;
 
 /**
  * @brief The type of a Warzone card.
@@ -82,6 +85,10 @@ public:
     Hand() = default;
     Hand(const Hand& other);
     Hand& operator=(const Hand& other);
+
+    bool operator == (const Hand& other) {return true;} //DECLARED FOR PLAYER FUNCTIONALITY, PLEASE IMPLEMENT
+    friend ostream& operator << (ostream &output, const Hand& hand) {return output;} //DECLARED FOR PLAYER FUNCTIONALITY, PLEASE IMPLEMENT
+
     ~Hand() = default;
 
     void addCard(unique_ptr<Card> card);
