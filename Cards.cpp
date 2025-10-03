@@ -1,6 +1,7 @@
-#include "Cards.h"
+﻿#include "Cards.h"
 #include <cstdlib>
 #include <ctime>
+#include <algorithm>
 
 // ---------------------- Card ----------------------------
 
@@ -31,7 +32,7 @@ string Card::getTypeAsString() const {
 
 void Card::play(Player* /*player*/, Deck* deck, Hand* hand, const CardPlayContext& /*context*/) {
     cout << "[Card] Played: " << getTypeAsString() << endl;
-    cout << " Would generate an Order and add to player's OrdersList." << endl;
+    cout << "Would generate an Order and add to player's OrdersList." << endl;
 
     // Capture type before removing this from the hand
     CardType currentType = this->getType();

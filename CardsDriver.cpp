@@ -1,26 +1,6 @@
 #include "Cards.h"
 
 /**
- * @brief Temporary stub class to simulate a territory.
- */
-class Territory {
-public:
-    string name = "TestTerritory";
-};
-
-/**
- * @brief Temporary stub class to simulate a player.
- */
-class Player {
-public:
-    OrdersList* orderList = nullptr;
-    Hand* hand = new Hand();
-
-    Player() = default;
-    ~Player() { delete hand; }
-};
-
-/**
  * @brief Driver function to test card draw, play, and recycle behaviour.
  */
 void testCards() {
@@ -38,7 +18,7 @@ void testCards() {
     for (int i = 0; i < 5; ++i) {
         auto card = deck->draw();
         if (card)
-            player->hand->addCard(move(card));
+            player->getHand()->addCard(move(card));
     }
 
     // Create dummy contexts for each card
@@ -51,15 +31,15 @@ void testCards() {
     }
 
     // Display state before playing cards
-    cout << "\nInitial Hand: " << *player->hand << endl;
-    cout << "Deck Before Play: " << *deck << endl;
+    cout << "\nInitial Hand: " << *player->getHand() << endl;
+    cout << "Deck Before Play: " << *deck << endl << endl;
 
     // Play all cards from the hand
-    player->hand->playAll(player, deck, contexts);
+    player->getHand()->playAll(player, deck, contexts);
 
     // Display state after playing cards
     cout << "\nDeck After Play: " << *deck << endl;
-    cout << "Hand After Play: " << *player->hand << endl;
+    cout << "Hand After Play: " << *player->getHand() << endl;
 
     // Cleanup
     for (auto& ctx : contexts) {
@@ -71,15 +51,3 @@ void testCards() {
     delete player;
     delete deck;
 }
-
-/**
- * @brief Program entry point.
- */
-int main() {
-    testCards();
-    return 0;
-}
-
-
-
-
