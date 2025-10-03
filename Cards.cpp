@@ -1,11 +1,18 @@
-﻿#include "Cards.h"
+#include "Cards.h"
 #include <cstdlib>
 #include <ctime>
-#include <algorithm>
 
-// --------------------- Card Implementation -----------------------
+// ---------------------- Card ----------------------------
 
 Card::Card(CardType type) : type(type) {}
+
+Card::Card(const Card& other) : type(other.type) {}
+
+Card& Card::operator=(const Card& other) {
+    if (this != &other)
+        type = other.type;
+    return *this;
+}
 
 CardType Card::getType() const {
     return type;
@@ -18,23 +25,43 @@ string Card::getTypeAsString() const {
     case CardType::Blockade: return "Blockade";
     case CardType::Airlift: return "Airlift";
     case CardType::Diplomacy: return "Diplomacy";
-    default: return "Unknown";
+    default: return "UnknownCardType";
     }
 }
 
-void Card::play(Player* player, Deck* deck, Hand* hand, const CardPlayContext& ctx) {
+void Card::play(Player* /*player*/, Deck* deck, Hand* hand, const CardPlayContext& /*context*/) {
     cout << "[Card] Played: " << getTypeAsString() << endl;
-    cout << "  → Would create an Order and add it to player's OrdersList here." << endl;
+    cout << " Would generate an Order and add to player's OrdersList." << endl;
 
-    // Remove from hand and return to deck
+    // Capture type before removing this from the hand
+    CardType currentType = this->getType();
     hand->removeCard(this);
-    deck->addCard(make_unique<Card>(type));
+    deck->addCard(make_unique<Card>(currentType));
 }
 
-// --------------------- Deck Implementation -----------------------
+ostream& operator<<(ostream& os, const Card& card) {
+    os << "Card(" << card.getTypeAsString() << ")";
+    return os;
+}
+
+// ---------------------- Deck ----------------------------
 
 Deck::Deck() {
-    srand(static_cast<unsigned>(time(nullptr)));
+    srand(static_cast<unsigned>(time(nullptr))); // Randomness for draw()
+}
+
+Deck::Deck(const Deck& other) {
+    for (const auto& card : other.cards)
+        cards.push_back(make_unique<Card>(*card));
+}
+
+Deck& Deck::operator=(const Deck& other) {
+    if (this != &other) {
+        cards.clear();
+        for (const auto& card : other.cards)
+            cards.push_back(make_unique<Card>(*card));
+    }
+    return *this;
 }
 
 void Deck::addCard(unique_ptr<Card> card) {
@@ -43,31 +70,35 @@ void Deck::addCard(unique_ptr<Card> card) {
 
 unique_ptr<Card> Deck::draw() {
     if (cards.empty()) return nullptr;
-
-    int index = rand() % cards.size();
-    auto card = move(cards[index]);
-    cards.erase(cards.begin() + index);
-    return card;
+    int i = rand() % static_cast<int>(cards.size());
+    auto selected = move(cards[i]);
+    cards.erase(cards.begin() + i);
+    return selected;
 }
 
 int Deck::size() const {
     return static_cast<int>(cards.size());
 }
 
-// --------------------- Hand Implementation -----------------------
+ostream& operator<<(ostream& os, const Deck& deck) {
+    os << "Deck[" << deck.size() << "]: ";
+    for (const auto& card : deck.cards)
+        os << *card << " ";
+    return os;
+}
+
+// ---------------------- Hand ----------------------------
 
 Hand::Hand(const Hand& other) {
-    for (const auto& card : other.getCards()) {
-        cards.push_back(make_unique<Card>(card->getType()));
-    }
+    for (const auto& card : other.cards)
+        cards.push_back(make_unique<Card>(*card));
 }
 
 Hand& Hand::operator=(const Hand& other) {
     if (this != &other) {
         cards.clear();
-        for (const auto& card : other.getCards()) {
-            cards.push_back(make_unique<Card>(card->getType()));
-        }
+        for (const auto& card : other.cards)
+            cards.push_back(make_unique<Card>(*card));
     }
     return *this;
 }
@@ -82,13 +113,46 @@ void Hand::removeCard(const Card* card) {
 }
 
 void Hand::playAll(Player* player, Deck* deck, const vector<CardPlayContext>& contexts) {
-    for (size_t i = 0; i < cards.size() && i < contexts.size(); ++i) {
-        cards[i]->play(player, deck, this, contexts[i]);
+    vector<Card*> toPlay;
+    toPlay.reserve(cards.size());
+    for (const auto& c : cards)
+        toPlay.push_back(c.get());
+
+    for (size_t i = 0; i < toPlay.size() && i < contexts.size(); ++i) {
+        cout << "[Hand] Playing card #" << i + 1 << ": " << toPlay[i]->getTypeAsString() << endl;
+        toPlay[i]->play(player, deck, this, contexts[i]);
     }
 }
 
 const vector<unique_ptr<Card>>& Hand::getCards() const {
     return cards;
 }
+
+ostream& operator<<(ostream& os, const Hand& hand) {
+    os << "Hand[" << hand.cards.size() << "]: ";
+    for (const auto& card : hand.cards)
+        os << *card << " ";
+    return os;
+}
+
+bool operator==(const Hand& playerOneHand, const Hand& playerTwoHand) {
+    const auto& cards1 = playerOneHand.getCards();
+    const auto& cards2 = playerTwoHand.getCards();
+
+    if (cards1.size() != cards2.size())
+        return false;
+
+    for (size_t i = 0; i < cards1.size(); ++i) {
+        if (cards1[i]->getType() != cards2[i]->getType())
+            return false;
+    }
+
+    return true;
+}
+
+bool operator!=(const Hand& playerOneHand, const Hand& playerTwoHand) {
+    return !(playerOneHand == playerTwoHand);
+}
+
 
 
