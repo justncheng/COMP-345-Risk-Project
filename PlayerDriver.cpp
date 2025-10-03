@@ -1,11 +1,15 @@
 #include "Player.h"
 
-void testPlayers()
+void testPlayers() //Free function that tests the Player class's functionality
 {
     Player* player1 = new Player(); //Creates new Player
     player1->getHand()->addCard(make_unique<Card>(CardType::Bomb)); //Adds a card to the player's hand
+    player1->getHand()->addCard(make_unique<Card>(CardType::Reinforcement)); //Adds a card to the player's hand
 
-    cout << "\nPlayer toDefend() method\n----------------------------------------\n";
+    cout << "\nPlayer Data\n-------------------------------------------------------------------\n";
+    cout << *player1 << endl;
+
+    cout << "\nPlayer toDefend() method\n-------------------------------------------------------------------\n";
     
     list<Territory> toDefendTerritories = player1->toDefend(); //Tests the toDefend() method
 
@@ -20,7 +24,7 @@ void testPlayers()
         }
     }
 
-    cout << "\n\nPlayer toAttack() method\n----------------------------------------\n";
+    cout << "\n\nPlayer toAttack() method\n-------------------------------------------------------------------\n";
     
     list<Territory> toAttackTerritories = player1->toAttack(); //Tests the toAttack() method
 
@@ -35,7 +39,7 @@ void testPlayers()
         }
     }
 
-    cout << "\n\nPlayer issueOrder() method\n----------------------------------------\n";
+    cout << "\n\nPlayer issueOrder() method\n-------------------------------------------------------------------\n";
 
     cout << "OrdersList before issueOrder(): " << *(player1->getOrdersList()) << "\n"; //Prints the before issueOrder() orders list for comparison
 
