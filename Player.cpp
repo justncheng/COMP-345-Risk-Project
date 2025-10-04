@@ -63,7 +63,7 @@ Player& Player::operator = (const Player& player) //Assignment Operator Overload
 
 bool Player::operator == (const Player& player) //Equals Operator Overloading
 {
-    //Checks if the lists have equal size
+     //Checks if the lists have equal size
     if(territories.size() != player.territories.size())
     {
         return false;
@@ -126,9 +126,8 @@ list<Territory> Player::toAttack()
     return {Territory(), Territory(), Territory()}; //Returns arbitrary list of territories
 }
 
-void Player::issueOrder()
+void Player::issueOrder(Order& order)
 {
-    Order order = Order(); //Creates an order
     ordersList->add(order); //Adds the order to the orders list
 }
 

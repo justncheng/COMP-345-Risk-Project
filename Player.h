@@ -27,7 +27,7 @@ class Player //Player class represents a player playing the game
 
         list<Territory> toDefend(); //Returns list of territories to defend
         list<Territory> toAttack(); //Returns list of territories to attack
-        void issueOrder(); //Issues an order
+        void issueOrder(Order& order); //Issues an order
 
         //Mutator Methods (Setters)
         void setTerritories(list<Territory*> newTerritories); //Sets list of territories
