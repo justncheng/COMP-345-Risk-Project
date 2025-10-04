@@ -38,8 +38,9 @@ void testPlayers()
     cout << "\n\nPlayer issueOrder() method\n----------------------------------------\n";
 
     cout << "OrdersList before issueOrder(): " << *(player1->getOrdersList()) << "\n"; //Prints the before issueOrder() orders list for comparison
-
-    player1->issueOrder(); //Tests the issueOrder() method
+    
+	Deploy d(player1, nullptr, 5); //Creates a Deploy order
+    player1->issueOrder(d); //Tests the issueOrder() method
 
     cout << "OrdersList after issueOrder(): " << *(player1->getOrdersList()) << "\n"; //Prints the after issueOrder() orders list for comparison
 
