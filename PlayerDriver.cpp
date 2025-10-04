@@ -1,4 +1,7 @@
 #include "Player.h"
+#include "Map.h"
+#include "Orders.h"
+#include "Cards.h"
 
 void testPlayers() //Free function that tests the Player class's functionality
 {
@@ -9,7 +12,7 @@ void testPlayers() //Free function that tests the Player class's functionality
     cout << "\nPlayer Data\n-------------------------------------------------------------------\n";
     cout << *player1 << endl;
 
-    cout << "\nPlayer toDefend() method\n-------------------------------------------------------------------\n";
+    cout << "Player toDefend() method\n-------------------------------------------------------------------\n";
     
     list<Territory> toDefendTerritories = player1->toDefend(); //Tests the toDefend() method
 
@@ -41,7 +44,7 @@ void testPlayers() //Free function that tests the Player class's functionality
 
     cout << "\n\nPlayer issueOrder() method\n-------------------------------------------------------------------\n";
 
-    cout << "OrdersList before issueOrder(): " << *(player1->getOrdersList()) << "\n"; //Prints the before issueOrder() orders list for comparison
+    cout << "OrdersList before issueOrder(): " << *(player1->getOrdersList()); //Prints the before issueOrder() orders list for comparison
     
 	Deploy d(player1, nullptr, 5); //Creates a Deploy order
     player1->issueOrder(d); //Tests the issueOrder() method

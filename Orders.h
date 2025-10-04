@@ -5,6 +5,7 @@
 #include <iostream>
 //#include "GameEngine.h"
 #include "Player.h"
+#include "Map.h"
 
 using namespace std;
 

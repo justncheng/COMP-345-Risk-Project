@@ -1,5 +1,7 @@
 #pragma once
 #include "Cards.h"
+#include "Map.h"
+#include "Player.h"
 
 /**
  * @brief Driver function to test card draw, play, and recycle behaviour.

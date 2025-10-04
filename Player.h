@@ -2,10 +2,10 @@
 
 #include <iostream>
 #include <list>
-
 #include "Map.h"
 #include "Orders.h"
 #include "Cards.h"
+
 using namespace std;
 
 //Forward declarations to avoid circular dependency

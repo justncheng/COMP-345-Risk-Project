@@ -3,8 +3,6 @@
 
 using namespace std;
 
-
-
 void testOrderLists() {
 
 	// Create dummy players and territories for testing
