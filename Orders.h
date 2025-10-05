@@ -74,6 +74,8 @@ public:
 	Order* clone() const override;
 	std::string toString() const override;
 
+	friend std::ostream& operator<<(std::ostream& os, const Deploy& order); // Stream insertion operator
+
 private:
 	Player* issuer; // Player issuing the order
 	Territory* target; // Target territory
@@ -96,6 +98,8 @@ public:
 
 	Order* clone() const override;
 	std::string toString() const override;
+
+	friend std::ostream& operator<<(std::ostream& os, const Advance& order); // Stream insertion operator
 
 private:
 	Player* issuer; // Player issuing the order
@@ -121,6 +125,8 @@ public:
 	Order* clone() const override;
 	std::string toString() const override;
 
+	friend std::ostream& operator<<(std::ostream& os, const Bomb& order); // Stream insertion operator
+
 private:
 	Player* issuer; // Player issuing the order
 	Territory* target; // Target territory
@@ -143,6 +149,8 @@ public:
 	Order* clone() const override;
 	std::string toString() const override;
 
+	friend std::ostream& operator<<(std::ostream& os, const Blockade& order); // Stream insertion operator
+
 private:
 	Player* issuer; // Player issuing the order
 	Territory* target; // Target territory
@@ -164,6 +172,8 @@ public:
 
 	Order* clone() const override;
 	std::string toString() const override;
+
+	friend std::ostream& operator<<(std::ostream& os, const Airlift& order); // Stream insertion operator
 
 private:
 	Player* issuer; // Player issuing the order
@@ -188,6 +198,8 @@ public:
 
 	Order* clone() const override;
 	std::string toString() const override;
+
+	friend std::ostream& operator<<(std::ostream& os, const Negotiate& order); // Stream insertion operator
 
 private:
 	Player* issuer; // Player issuing the order

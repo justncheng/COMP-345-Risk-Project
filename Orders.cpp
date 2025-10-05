@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>
+#include <typeinfo>
 
 using namespace std;
 
@@ -112,6 +113,11 @@ std::string Deploy::toString() const //Converts Deploy order details to string
 	//	", Target: " + (target ? target->getName() : "None") + ", Armies: " + to_string(armies); // To be implemented when Player and Territory classes are available
 }
 
+std::ostream& operator<<(std::ostream& os, const Deploy& order)    
+{ 
+	return os << static_cast<const Order&>(order); 
+}
+
 // Advance Class Implementation --------------------------------------------------------------------
 
 Advance::Advance() : Order("Advance"), issuer(nullptr), source(nullptr), target(nullptr), armies(0) {} // Default constructor
@@ -170,6 +176,11 @@ std::string Advance::toString() const // Converts Advance order details to strin
 	//	", Armies: " + to_string(armies); // To be implemented when Player and Territory classes are available
 }
 
+std::ostream& operator<<(std::ostream& os, const Advance& order) 
+{ 
+	return os << static_cast<const Order&>(order); 
+}
+
 // Bomb Class Implementation -----------------------------------------------------------------------
 
 Bomb::Bomb() : Order("Bomb"), issuer(nullptr), target(nullptr) {} // Default constructor
@@ -224,6 +235,11 @@ std::string Bomb::toString() const // Converts Bomb order details to string
 	//	", Target: " + (target ? target->getName() : "None"); // To be implemented when Player and Territory classes are available
 }
 
+std::ostream& operator<<(std::ostream& os, const Bomb& order) 
+{ 
+	return os << static_cast<const Order&>(order); 
+}
+
 // Blockade Class Implementation -------------------------------------------------------------------
 
 Blockade::Blockade() : Order("Blockade"), issuer(nullptr), target(nullptr) {} // Default constructor
@@ -276,6 +292,11 @@ std::string Blockade::toString() const // Converts Blockade order details to str
 	return "Order: Blockade";
 	//return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
 	//	", Target: " + (target ? target->getName() : "None"); // To be implemented when Player and Territory classes are available
+}
+
+std::ostream& operator<<(std::ostream& os, const Blockade& order) 
+{ 
+	return os << static_cast<const Order&>(order); 
 }
 
 // Airlift Class Implementation --------------------------------------------------------------------
@@ -336,6 +357,11 @@ std::string Airlift::toString() const // Converts Airlift order details to strin
 	//	", Armies: " + to_string(armies); // To be implemented when Player and Territory classes are available
 }
 
+std::ostream& operator<<(std::ostream& os, const Airlift& order) 
+{ 
+	return os << static_cast<const Order&>(order); 
+}
+
 // Negotiate Class Implementation --------------------------------------------------------------------
 
 Negotiate::Negotiate() : Order("Negotiate"), issuer(nullptr), targetPlayer(nullptr) {} // Default constructor
@@ -388,6 +414,11 @@ std::string Negotiate::toString() const // Converts Negotiate order details to s
 	return "Order: Negotiate";
 	//return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
 	//	", Target Player: " + (targetPlayer ? targetPlayer->getName() : "None"); // To be implemented when Player class is available
+}
+
+std::ostream& operator<<(std::ostream& os, const Negotiate& order) 
+{ 
+	return os << static_cast<const Order&>(order); 
 }
 
 // OrdersList Class Implementation -----------------------------------------------------------------
