@@ -14,6 +14,6 @@ int main()
     testPlayers();
 	testOrderLists();
     testCards();
-    //testGameStates(); UNCOMMENT WHEN IMPLEMENTED
+    testGameStates(); 
     return 0;
 }
