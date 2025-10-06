@@ -1,459 +1,370 @@
 #include "Map.h"
-
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <cctype>
-#include <unordered_map>
-#include <queue>
 #include <set>
 
-/* ---------------------------
- * Helper functions
- * ---------------------------
- */
-static inline std::string trim(const std::string& s) {
-    size_t a = 0;
-    while (a < s.size() && std::isspace((unsigned char)s[a])) ++a;
-    size_t b = s.size();
-    while (b > a && std::isspace((unsigned char)s[b - 1])) --b;
-    return s.substr(a, b - a);
-}
+// Territory implementation
+Territory::Territory(const std::string& name, int x, int y, const std::string& continent) 
+    : name(name), x(x), y(y), continent(continent), owner(nullptr), armyUnits(0) {}
 
-static inline std::vector<std::string> splitByComma(const std::string& s) {
-    std::vector<std::string> tokens;
-    std::string cur;
-    std::istringstream ss(s);
-    while (std::getline(ss, cur, ',')) {
-        tokens.push_back(trim(cur));
-    }
-    return tokens;
-}
-
-/* ---------------------------
- * Territory implementation
- * ---------------------------
- */
-Territory::Territory(const std::string& name_, int x_, int y_)
-    : name(name_), x(x_), y(y_), continent(nullptr) {}
-
-Territory::Territory(const Territory& other)
-    : name(other.name), x(other.x), y(other.y), continent(nullptr) {
-    // Do not copy adjacency pointers or continent pointer here.
-    // Graph-level copying is handled in Map's copy constructor (deep copy).
+Territory::Territory(const Territory& other) 
+    : name(other.name), x(other.x), y(other.y), continent(other.continent), 
+      owner(other.owner), armyUnits(other.armyUnits) {
+    // Deep copy adjacent territories (pointers only, not the actual territories)
+    adjacentTerritories = other.adjacentTerritories;
 }
 
 Territory& Territory::operator=(const Territory& other) {
-    if (this == &other) return *this;
-    name = other.name;
-    x = other.x;
-    y = other.y;
-    continent = nullptr;
-    adjacents.clear();
+    if (this != &other) {
+        name = other.name;
+        x = other.x;
+        y = other.y;
+        continent = other.continent;
+        owner = other.owner;
+        armyUnits = other.armyUnits;
+        adjacentTerritories = other.adjacentTerritories;
+    }
     return *this;
 }
 
-Territory::~Territory() {
-    // Do not delete continent or adjacent pointers here;
-    // Map destructor will delete the objects.
-}
-
-const std::string& Territory::getName() const { return name; }
+std::string Territory::getName() const { return name; }
 int Territory::getX() const { return x; }
 int Territory::getY() const { return y; }
-Continent* Territory::getContinent() const { return continent; }
-void Territory::setContinent(Continent* c) { continent = c; }
-const std::vector<Territory*>& Territory::getAdjacents() const { return adjacents; }
+std::string Territory::getContinent() const { return continent; }
+std::vector<Territory*> Territory::getAdjacentTerritories() const { return adjacentTerritories; }
+Player* Territory::getOwner() const { return owner; }
+int Territory::getArmyUnits() const { return armyUnits; }
 
-void Territory::addAdjacent(Territory* t) {
-    if (t == nullptr) return;
-    if (t == this) return; // avoid self-loop
-    // prevent duplicates
-    for (auto existing : adjacents)
-        if (existing == t) return;
-    adjacents.push_back(t);
+void Territory::setOwner(Player* newOwner) { owner = newOwner; }
+void Territory::setArmyUnits(int units) { armyUnits = units; }
+
+void Territory::addAdjacentTerritory(Territory* territory) {
+    adjacentTerritories.push_back(territory);
 }
 
-std::ostream& operator<<(std::ostream& os, const Territory& t) {
-    os << "Territory \"" << t.name << "\" (" << t.x << "," << t.y << ")";
-    if (t.continent) os << " Continent: " << t.continent->getName();
-    else os << " Continent: [none]";
-    os << " Adjacent: [";
-    for (size_t i = 0; i < t.adjacents.size(); ++i) {
-        os << t.adjacents[i]->getName();
-        if (i + 1 < t.adjacents.size()) os << ", ";
-    }
-    os << "]";
+std::ostream& operator<<(std::ostream& os, const Territory& territory) {
+    os << "Territory: " << territory.name 
+       << " (Continent: " << territory.continent 
+       << ", Position: " << territory.x << "," << territory.y 
+       << ", Armies: " << territory.armyUnits << ")";
     return os;
 }
 
+// Continent implementation
+Continent::Continent(const std::string& name, int bonusValue) 
+    : name(name), bonusValue(bonusValue) {}
 
-/* ---------------------------
- * Continent implementation
- * ---------------------------
- */
-Continent::Continent(const std::string& name_, int cv)
-    : name(name_), controlValue(cv) {}
-
-Continent::Continent(const Continent& other)
-    : name(other.name), controlValue(other.controlValue) {
-    // territories vector is left empty; Map copy will fill it.
+Continent::Continent(const Continent& other) 
+    : name(other.name), bonusValue(other.bonusValue) {
+    territories = other.territories;
 }
 
 Continent& Continent::operator=(const Continent& other) {
-    if (this == &other) return *this;
-    name = other.name;
-    controlValue = other.controlValue;
-    territories.clear();
+    if (this != &other) {
+        name = other.name;
+        bonusValue = other.bonusValue;
+        territories = other.territories;
+    }
     return *this;
 }
 
-Continent::~Continent() {
-    // Do not delete territories here; Map destructor will handle deletion.
+std::string Continent::getName() const { return name; }
+int Continent::getBonusValue() const { return bonusValue; }
+std::vector<Territory*> Continent::getTerritories() const { return territories; }
+
+void Continent::addTerritory(Territory* territory) {
+    territories.push_back(territory);
 }
 
-const std::string& Continent::getName() const { return name; }
-int Continent::getControlValue() const { return controlValue; }
-const std::vector<Territory*>& Continent::getTerritories() const { return territories; }
-void Continent::addTerritory(Territory* t) {
-    if (!t) return;
-    for (auto existing : territories) if (existing == t) return;
-    territories.push_back(t);
-}
-
-std::ostream& operator<<(std::ostream& os, const Continent& c) {
-    os << "Continent \"" << c.name << "\" (value=" << c.controlValue << ") Territories: [";
-    for (size_t i = 0; i < c.territories.size(); ++i) {
-        os << c.territories[i]->getName();
-        if (i + 1 < c.territories.size()) os << ", ";
-    }
-    os << "]";
+std::ostream& operator<<(std::ostream& os, const Continent& continent) {
+    os << "Continent: " << continent.name 
+       << " (Bonus: " << continent.bonusValue 
+       << ", Territories: " << continent.territories.size() << ")";
     return os;
 }
 
-
-/* ---------------------------
- * Map implementation
- * ---------------------------
- */
+// Map implementation
 Map::Map() {}
 
 Map::Map(const Map& other) {
-    // Deep copy: 1) create new continent objects, 2) create new territory objects,
-    // 3) set each territory's continent, add territories to continent lists,
-    // 4) resolve adjacency pointers using mapping from old -> new
-    std::unordered_map<Continent*, Continent*> continentMap;
-    std::unordered_map<Territory*, Territory*> territoryMap;
-
-    // 1) copy continents
-    for (auto oldC : other.continents) {
-        Continent* nc = new Continent(*oldC); // uses Continent copy ctor (which copies basic fields)
-        continents.push_back(nc);
-        continentMap[oldC] = nc;
+    // Deep copy territories and continents
+    for (Territory* territory : other.territories) {
+        territories.push_back(new Territory(*territory));
     }
-
-    // 2) copy territories (no adjacencies yet)
-    for (auto oldT : other.territories) {
-        Territory* nt = new Territory(*oldT); // copies name, x, y
-        territories.push_back(nt);
-        territoryMap[oldT] = nt;
-    }
-
-    // 3) set continent pointers and populate continent->territories
-    for (auto oldT : other.territories) {
-        Territory* nt = territoryMap[oldT];
-        Continent* oldC = oldT->getContinent();
-        if (oldC) {
-            Continent* nc = continentMap[oldC];
-            nt->setContinent(nc);
-            nc->addTerritory(nt);
-        } else {
-            nt->setContinent(nullptr);
-        }
-    }
-
-    // 4) resolve adjacency lists
-    for (auto oldT : other.territories) {
-        Territory* nt = territoryMap[oldT];
-        for (auto oldAdj : oldT->getAdjacents()) {
-            Territory* mappedAdj = territoryMap[oldAdj];
-            if (mappedAdj) nt->addAdjacent(mappedAdj);
-        }
+    for (Continent* continent : other.continents) {
+        continents.push_back(new Continent(*continent));
     }
 }
 
 Map& Map::operator=(const Map& other) {
-    if (this == &other) return *this;
-    // copy-swap idiom via temporary
-    Map tmp(other);
-    // swap internals (vectors of pointers)
-    territories.swap(tmp.territories);
-    continents.swap(tmp.continents);
-    // tmp destructor will free old data
+    if (this != &other) {
+        // Clean up existing data
+        for (Territory* territory : territories) {
+            delete territory;
+        }
+        for (Continent* continent : continents) {
+            delete continent;
+        }
+        territories.clear();
+        continents.clear();
+        
+        // Deep copy
+        for (Territory* territory : other.territories) {
+            territories.push_back(new Territory(*territory));
+        }
+        for (Continent* continent : other.continents) {
+            continents.push_back(new Continent(*continent));
+        }
+    }
     return *this;
 }
 
 Map::~Map() {
-    // Map owns the continents and territories; delete them
-    for (auto t : territories) delete t;
-    territories.clear();
-    for (auto c : continents) delete c;
-    continents.clear();
+    for (Territory* territory : territories) {
+        delete territory;
+    }
+    for (Continent* continent : continents) {
+        delete continent;
+    }
 }
 
-void Map::addTerritory(Territory* t) {
-    if (!t) return;
-    for (auto existing : territories) if (existing == t) return;
-    territories.push_back(t);
+void Map::addTerritory(Territory* territory) {
+    territories.push_back(territory);
 }
 
-void Map::addContinent(Continent* c) {
-    if (!c) return;
-    for (auto existing : continents) if (existing == c) return;
-    continents.push_back(c);
+void Map::addContinent(Continent* continent) {
+    continents.push_back(continent);
 }
 
-const std::vector<Territory*>& Map::getTerritories() const { return territories; }
-const std::vector<Continent*>& Map::getContinents() const { return continents; }
+std::vector<Territory*> Map::getTerritories() const {
+    return territories;
+}
 
-/* Validation helpers */
+std::vector<Continent*> Map::getContinents() const {
+    return continents;
+}
 
-/* isConnectedGraph()
- * - pick the first territory and BFS across adjacency pointers
- * - if all territories are visited, graph is connected
- */
-bool Map::isConnectedGraph() const {
-    if (territories.empty()) return false; // empty map is invalid
-    std::set<Territory*> visited;
-    std::queue<Territory*> q;
-    q.push(territories[0]);
-    visited.insert(territories[0]);
-    while (!q.empty()) {
-        Territory* cur = q.front(); q.pop();
-        for (auto nbr : cur->getAdjacents()) {
-            if (visited.insert(nbr).second) q.push(nbr);
+Territory* Map::getTerritoryByName(const std::string& name) const {
+    for (Territory* territory : territories) {
+        if (territory->getName() == name) {
+            return territory;
         }
     }
+    return nullptr;
+}
+
+Continent* Map::getContinentByName(const std::string& name) const {
+    for (Continent* continent : continents) {
+        if (continent->getName() == name) {
+            return continent;
+        }
+    }
+    return nullptr;
+}
+
+bool Map::validate() {
+    return isConnectedGraph() && continentsAreConnectedSubgraphs() && territoriesBelongToOneContinent();
+}
+
+bool Map::isConnectedGraph() {
+    if (territories.empty()) return false;
+    
+    std::vector<Territory*> visited;
+    depthFirstSearch(territories[0], visited);
+    
     return visited.size() == territories.size();
 }
 
-/* continentsAreConnected()
- * For each continent, perform BFS but only traverse edges to territories that belong to the same continent.
- */
-bool Map::continentsAreConnected() const {
-    for (auto cont : continents) {
-        const auto& contTerr = cont->getTerritories();
-        if (contTerr.empty()) return false; // continent with no territories -> invalid
-        std::set<Territory*> visited;
-        std::queue<Territory*> q;
-        q.push(contTerr[0]);
-        visited.insert(contTerr[0]);
-        while (!q.empty()) {
-            Territory* cur = q.front(); q.pop();
-            for (auto nbr : cur->getAdjacents()) {
-                if (nbr->getContinent() == cont) {
-                    if (visited.insert(nbr).second) q.push(nbr);
+bool Map::continentsAreConnectedSubgraphs() {
+    for (Continent* continent : continents) {
+        std::vector<Territory*> continentTerritories = continent->getTerritories();
+        if (continentTerritories.empty()) continue;
+        
+        std::vector<Territory*> visited;
+        continentDFS(continentTerritories[0], continent->getName(), visited);
+        
+        if (visited.size() != continentTerritories.size()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Map::territoriesBelongToOneContinent() {
+    for (Territory* territory : territories) {
+        int count = 0;
+        for (Continent* continent : continents) {
+            for (Territory* contTerritory : continent->getTerritories()) {
+                if (contTerritory == territory) {
+                    count++;
+                    break;
                 }
             }
         }
-        if (visited.size() != contTerr.size()) return false;
-    }
-    return true;
-}
-
-/* eachCountryOneContinent()
- * Ensure every territory has a non-null continent pointer and that a territory appears in exactly one continent's list.
- */
-bool Map::eachCountryOneContinent() const {
-    std::unordered_map<Territory*, int> cnt;
-    for (auto c : continents) {
-        for (auto t : c->getTerritories()) {
-            cnt[t] += 1;
-            if (cnt[t] > 1) return false;
+        if (count != 1) {
+            return false;
         }
     }
-    // check that all territories are present exactly once
-    for (auto t : territories) {
-        if (cnt.find(t) == cnt.end()) return false; // missing from all continents
-        if (cnt[t] != 1) return false; // either 0 or >1
-    }
     return true;
 }
 
-bool Map::validate(std::string& errorMessage) const {
-    if (!isConnectedGraph()) {
-        errorMessage = "Map is not a connected graph (some territories are disconnected).";
-        return false;
+void Map::depthFirstSearch(Territory* start, std::vector<Territory*>& visited) {
+    if (std::find(visited.begin(), visited.end(), start) != visited.end()) {
+        return;
     }
-    if (!continentsAreConnected()) {
-        errorMessage = "At least one continent is not a connected subgraph.";
-        return false;
+    
+    visited.push_back(start);
+    
+    for (Territory* adjacent : start->getAdjacentTerritories()) {
+        depthFirstSearch(adjacent, visited);
     }
-    if (!eachCountryOneContinent()) {
-        errorMessage = "One or more territories do not belong to exactly one continent.";
-        return false;
-    }
-    errorMessage = "Map is valid.";
-    return true;
 }
 
-std::ostream& operator<<(std::ostream& os, const Map& m) {
-    os << "Map: " << m.territories.size() << " territories, " << m.continents.size() << " continents\n";
-    os << "Continents:\n";
-    for (auto c : m.continents) {
-        os << "  " << *c << "\n";
+void Map::continentDFS(Territory* start, const std::string& continentName, std::vector<Territory*>& visited) {
+    if (std::find(visited.begin(), visited.end(), start) != visited.end()) {
+        return;
     }
-    os << "Territories:\n";
-    for (auto t : m.territories) {
-        os << "  " << *t << "\n";
+    
+    visited.push_back(start);
+    
+    for (Territory* adjacent : start->getAdjacentTerritories()) {
+        if (adjacent->getContinent() == continentName) {
+            continentDFS(adjacent, continentName, visited);
+        }
     }
+}
+
+std::ostream& operator<<(std::ostream& os, const Map& map) {
+    os << "Map contains:" << std::endl;
+    os << "- " << map.continents.size() << " continents" << std::endl;
+    os << "- " << map.territories.size() << " territories" << std::endl;
+    
+    for (Continent* continent : map.continents) {
+        os << "  " << *continent << std::endl;
+    }
+    
     return os;
 }
 
+// MapLoader implementation
+MapLoader::MapLoader() {}
 
-/* ---------------------------
- * MapLoader implementation
- * ---------------------------
- *
- * Must accept Conquest .map style files similar to the examples you gave.
- * We will parse three sections: [Map], [Continents], [Territories]
- * - Continents: lines like "Name=ControlValue"
- * - Territories: lines like "Name,x,y,Continent,Adj1,Adj2,..."
- *
- * Loader is permissive: it will build a Map object from any text file content it can parse.
- */
-Map* MapLoader::loadMapFromFile(const std::string& filename) {
-    std::ifstream in(filename);
-    if (!in) {
-        std::cerr << "MapLoader: cannot open file '" << filename << "'\n";
+MapLoader::MapLoader(const MapLoader& other) {
+    // Copy constructor - no dynamic data to copy
+}
+
+MapLoader& MapLoader::operator=(const MapLoader& other) {
+    if (this != &other) {
+        // Assignment operator - no dynamic data to copy
+    }
+    return *this;
+}
+
+Map* MapLoader::loadMap(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cout << "Error: Could not open file " << filename << std::endl;
         return nullptr;
     }
-
-    enum Section { NONE, MAP_SECTION, CONTINENTS_SECTION, TERRITORIES_SECTION };
-    Section section = NONE;
-
-    // temporary storages
-    std::unordered_map<std::string, Continent*> continentByName;
-    std::unordered_map<std::string, Territory*> territoryByName;
-    std::unordered_map<std::string, std::vector<std::string>> pendingAdj; // territory name -> adjacency names
-
+    
+    Map* map = new Map();
     std::string line;
-    while (std::getline(in, line)) {
-        std::string trimmed = trim(line);
-        if (trimmed.empty()) continue;
-        if (trimmed.size() > 0 && trimmed[0] == ';') continue; // comment in some map files
-
-        // detect section headers (case-insensitive)
-        std::string lower = trimmed;
-        std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c){ return std::tolower(c); });
-        if (lower == "[map]") { section = MAP_SECTION; continue; }
-        if (lower == "[continents]") { section = CONTINENTS_SECTION; continue; }
-        if (lower == "[territories]") { section = TERRITORIES_SECTION; continue; }
-
-        if (section == CONTINENTS_SECTION) {
-            // expected: Name=Value
-            size_t eq = trimmed.find('=');
-            if (eq == std::string::npos) continue;
-            std::string cname = trim(trimmed.substr(0, eq));
-            std::string val = trim(trimmed.substr(eq + 1));
-            int control = 0;
-            try { control = std::stoi(val); } catch (...) { control = 0; }
-            Continent* c = new Continent(cname, control);
-            continentByName[cname] = c;
-        } else if (section == TERRITORIES_SECTION) {
-            // expected: Name,x,y,Continent,Adj1,Adj2,...
-            auto tokens = splitByComma(trimmed);
+    std::string currentSection;
+    
+    while (std::getline(file, line)) {
+        // Skip empty lines and comments
+        if (line.empty() || line[0] == ';') continue;
+        
+        // Check for section headers
+        if (line[0] == '[') {
+            currentSection = line;
+            continue;
+        }
+        
+        // Process different sections
+        if (currentSection == "[Continents]") {
+            // Parse continent line: Name=BonusValue
+            size_t equalPos = line.find('=');
+            if (equalPos != std::string::npos) {
+                std::string name = line.substr(0, equalPos);
+                int bonusValue = std::stoi(line.substr(equalPos + 1));
+                map->addContinent(new Continent(name, bonusValue));
+            }
+        }
+        else if (currentSection == "[Territories]") {
+            // Parse territory line: Name,X,Y,Continent,Adjacent1,Adjacent2,...
+            std::stringstream ss(line);
+            std::string token;
+            std::vector<std::string> tokens;
+            
+            while (std::getline(ss, token, ',')) {
+                tokens.push_back(token);
+            }
+            
             if (tokens.size() >= 4) {
-                std::string tname = tokens[0];
-                int tx = 0, ty = 0;
-                try { tx = std::stoi(tokens[1]); } catch (...) { tx = 0; }
-                try { ty = std::stoi(tokens[2]); } catch (...) { ty = 0; }
-                std::string contName = tokens[3];
-
-                Territory* t = new Territory(tname, tx, ty);
-                territoryByName[tname] = t;
-
-                // store adjacency names to resolve after the whole file is read
-                std::vector<std::string> adjNames;
-                for (size_t i = 4; i < tokens.size(); ++i) {
-                    if (!tokens[i].empty()) adjNames.push_back(tokens[i]);
-                }
-                pendingAdj[tname] = adjNames;
-
-                // attach territory to continent if continent exists (if not yet created, resolve later)
-                auto itc = continentByName.find(contName);
-                if (itc != continentByName.end()) {
-                    t->setContinent(itc->second);
-                    itc->second->addTerritory(t);
-                } else {
-                    // continent not created yet - we'll resolve after full read
-                    t->setContinent(nullptr);
+                std::string name = tokens[0];
+                int x = std::stoi(tokens[1]);
+                int y = std::stoi(tokens[2]);
+                std::string continent = tokens[3];
+                
+                Territory* territory = new Territory(name, x, y, continent);
+                map->addTerritory(territory);
+                
+                // Add territory to its continent
+                Continent* cont = map->getContinentByName(continent);
+                if (cont) {
+                    cont->addTerritory(territory);
                 }
             }
-        } else {
-            // We ignore other sections' lines for now (like [Map] metadata)
         }
     }
-
-    // After file read, some territories may refer to continents that were declared after them.
-    // Resolve continent pointers for any territory that still has continent == nullptr but has a continent name in pendingAdj keys? Wait: we didn't store per-territory continent name. To keep code simple,
-    // we'll do a second pass: try to assign territories to continents by comparing continent names found in continentByName map with territory names' continent if the territory->getContinent() is null.
-    // But we did not store the continent name separately. To keep the loader permissive, we will iterate through all continents and try to find territories that have that continent name via string matching of tokens:
-    // (Simpler:) We will re-open the file to re-parse territory lines to get continent names. This is not very efficient but simplifies implementation.
-
-    in.clear();
-    in.seekg(0);
-    section = NONE;
-    while (std::getline(in, line)) {
-        std::string trimmed = trim(line);
-        if (trimmed.empty()) continue;
-        std::string lower = trimmed;
-        std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c){ return std::tolower(c); });
-        if (lower == "[map]") { section = MAP_SECTION; continue; }
-        if (lower == "[continents]") { section = CONTINENTS_SECTION; continue; }
-        if (lower == "[territories]") { section = TERRITORIES_SECTION; continue; }
-
-        if (section == TERRITORIES_SECTION) {
-            auto tokens = splitByComma(trimmed);
-            if (tokens.size() >= 4) {
-                std::string tname = tokens[0];
-                std::string contName = tokens[3];
-                auto itTerr = territoryByName.find(tname);
-                if (itTerr != territoryByName.end()) {
-                    Territory* t = itTerr->second;
-                    auto itc = continentByName.find(contName);
-                    if (itc != continentByName.end()) {
-                        t->setContinent(itc->second);
-                        itc->second->addTerritory(t);
+    
+    file.close();
+    
+    // Now process adjacencies (we need all territories created first)
+    file.open(filename);
+    currentSection = "";
+    
+    while (std::getline(file, line)) {
+        if (line.empty() || line[0] == ';') continue;
+        
+        if (line[0] == '[') {
+            currentSection = line;
+            continue;
+        }
+        
+        if (currentSection == "[Territories]") {
+            std::stringstream ss(line);
+            std::string token;
+            std::vector<std::string> tokens;
+            
+            while (std::getline(ss, token, ',')) {
+                tokens.push_back(token);
+            }
+            
+            if (tokens.size() >= 5) {
+                std::string currentTerritoryName = tokens[0];
+                Territory* currentTerritory = map->getTerritoryByName(currentTerritoryName);
+                
+                if (currentTerritory) {
+                    // Add adjacent territories (starting from index 4)
+                    for (size_t i = 4; i < tokens.size(); i++) {
+                        Territory* adjacent = map->getTerritoryByName(tokens[i]);
+                        if (adjacent) {
+                            currentTerritory->addAdjacentTerritory(adjacent);
+                        }
                     }
-                    // else leave it null; validate() will catch missing continent membership
                 }
             }
         }
     }
+    
+    file.close();
+    return map;
+}
 
-    // Now resolve adjacency lists (add edges both ways, avoiding duplicates)
-    for (auto& kv : pendingAdj) {
-        const std::string& tname = kv.first;
-        Territory* t = (territoryByName.count(tname) ? territoryByName[tname] : nullptr);
-        if (!t) continue;
-        for (const auto& adjName : kv.second) {
-            if (territoryByName.count(adjName)) {
-                Territory* adj = territoryByName[adjName];
-                t->addAdjacent(adj);
-                adj->addAdjacent(t); // ensure undirected edge
-            } else {
-                // adjacency refers to an unknown territory; loader stays permissive - warn and skip
-                std::cerr << "MapLoader: in file '" << filename << "' adjacency '" << adjName
-                          << "' referenced by '" << tname << "' not found in file.\n";
-            }
-        }
-    }
-
-    // Build Map object
-    Map* m = new Map();
-    for (auto& kv : continentByName) m->addContinent(kv.second);
-    for (auto& kv : territoryByName) m->addTerritory(kv.second);
-
-    return m;
+std::ostream& operator<<(std::ostream& os, const MapLoader& loader) {
+    os << "MapLoader object";
+    return os;
 }
