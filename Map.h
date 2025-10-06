@@ -1,117 +1,127 @@
-#pragma once
+#ifndef MAP_H
+#define MAP_H
 
-#include <string>
-#include <vector>
 #include <iostream>
+#include <vector>
+#include <string>
+#include <memory>
 
-// Forward declarations
-class Continent;
-class Territory;
-class Map;
+// Forward declaration
+class Player;
 
-/*
- * Territory
- * - name, coordinates (x,y)
- * - pointer to continent it belongs to
- * - adjacency list of pointers to neighboring territories
+/**
+ * @class Territory
+ * @brief Represents a territory in the Warzone game map
  */
 class Territory {
 private:
     std::string name;
-    int x;
-    int y;
-    Continent* continent;                 // pointer to continent (requirement)
-    std::vector<Territory*> adjacents;    // adjacency pointers
+    int x, y;
+    std::string continent;
+    std::vector<Territory*> adjacentTerritories;
+    Player* owner;
+    int armyUnits;
 
 public:
-    Territory(const std::string& name = "", int x = 0, int y = 0);
-    Territory(const Territory& other);            // copy constructor
-    Territory& operator=(const Territory& other); // assignment operator
-    ~Territory();
-
-    const std::string& getName() const;
+    // Constructors
+    Territory(const std::string& name, int x, int y, const std::string& continent);
+    Territory(const Territory& other); // Copy constructor
+    Territory& operator=(const Territory& other); // Assignment operator
+    
+    // Getters and setters
+    std::string getName() const;
     int getX() const;
     int getY() const;
-
-    Continent* getContinent() const;
-    void setContinent(Continent* c);
-
-    const std::vector<Territory*>& getAdjacents() const;
-    void addAdjacent(Territory* t);
-
-    friend std::ostream& operator<<(std::ostream& os, const Territory& t);
+    std::string getContinent() const;
+    std::vector<Territory*> getAdjacentTerritories() const;
+    Player* getOwner() const;
+    int getArmyUnits() const;
+    
+    void setOwner(Player* newOwner);
+    void setArmyUnits(int units);
+    void addAdjacentTerritory(Territory* territory);
+    
+    // Stream insertion operator
+    friend std::ostream& operator<<(std::ostream& os, const Territory& territory);
 };
 
-
-/*
- * Continent
- * - name and control value
- * - list of territories that belong to this continent (pointers)
+/**
+ * @class Continent
+ * @brief Represents a continent containing multiple territories
  */
 class Continent {
 private:
     std::string name;
-    int controlValue;
-    std::vector<Territory*> territories;  // pointers
+    int bonusValue;
+    std::vector<Territory*> territories;
 
 public:
-    Continent(const std::string& name = "", int controlValue = 0);
-    Continent(const Continent& other);            // copy constructor
-    Continent& operator=(const Continent& other); // assignment operator
-    ~Continent();
-
-    const std::string& getName() const;
-    int getControlValue() const;
-    const std::vector<Territory*>& getTerritories() const;
-    void addTerritory(Territory* t);
-
-    friend std::ostream& operator<<(std::ostream& os, const Continent& c);
+    Continent(const std::string& name, int bonusValue);
+    Continent(const Continent& other); // Copy constructor
+    Continent& operator=(const Continent& other); // Assignment operator
+    
+    // Getters
+    std::string getName() const;
+    int getBonusValue() const;
+    std::vector<Territory*> getTerritories() const;
+    
+    void addTerritory(Territory* territory);
+    
+    // Stream insertion operator
+    friend std::ostream& operator<<(std::ostream& os, const Continent& continent);
 };
 
-
-/*
- * Map
- * - collection of territories and continents (stored as pointers)
- * - validation methods
+/**
+ * @class Map
+ * @brief Represents the game map as a connected graph
  */
 class Map {
 private:
-    std::vector<Territory*> territories; // pointers
-    std::vector<Continent*> continents;  // pointers
+    std::vector<Territory*> territories;
+    std::vector<Continent*> continents;
 
 public:
     Map();
-    Map(const Map& other);            // deep copy
-    Map& operator=(const Map& other); // deep assignment (copy-swap idiom)
+    Map(const Map& other); // Copy constructor
+    Map& operator=(const Map& other); // Assignment operator
     ~Map();
-
-    void addTerritory(Territory* t);
-    void addContinent(Continent* c);
-
-    const std::vector<Territory*>& getTerritories() const;
-    const std::vector<Continent*>& getContinents() const;
-
-    // validate: runs the three checks and returns false if any fail,
-    // and an explanatory message in errorMessage.
-    bool validate(std::string& errorMessage) const;
-
-    // separate checks (public so driver can call them individually)
-    bool isConnectedGraph() const;
-    bool continentsAreConnected() const;
-    bool eachCountryOneContinent() const;
-
-    friend std::ostream& operator<<(std::ostream& os, const Map& m);
+    
+    // Territory and continent management
+    void addTerritory(Territory* territory);
+    void addContinent(Continent* continent);
+    std::vector<Territory*> getTerritories() const;
+    std::vector<Continent*> getContinents() const;
+    Territory* getTerritoryByName(const std::string& name) const;
+    Continent* getContinentByName(const std::string& name) const;
+    
+    // Validation methods
+    bool validate();
+    bool isConnectedGraph();
+    bool continentsAreConnectedSubgraphs();
+    bool territoriesBelongToOneContinent();
+    
+    // Helper methods for graph traversal
+    void depthFirstSearch(Territory* start, std::vector<Territory*>& visited);
+    void continentDFS(Territory* start, const std::string& continent, std::vector<Territory*>& visited);
+    
+    // Stream insertion operator
+    friend std::ostream& operator<<(std::ostream& os, const Map& map);
 };
 
-
-/*
- * MapLoader
- * - static loader function that reads a .map file (Conquest format)
- * - returns a dynamically allocated Map* (caller should delete it when done).
- * - the loader is permissive: it will try to read any text file and build
- *   a Map object from what it can (as requested).
+/**
+ * @class MapLoader
+ * @brief Loads map files and creates Map objects
  */
 class MapLoader {
 public:
-    static Map* loadMapFromFile(const std::string& filename);
+    MapLoader();
+    MapLoader(const MapLoader& other); // Copy constructor
+    MapLoader& operator=(const MapLoader& other); // Assignment operator
+    
+    Map* loadMap(const std::string& filename);
+    
+    // Stream insertion operator
+    friend std::ostream& operator<<(std::ostream& os, const MapLoader& loader);
 };
+
+#endif // MAP_H
