@@ -5,4 +5,4 @@ Part 1 - Andro Razk\
 Part 2 - Marissa Jones 40305825\
 Part 3 - Justin Cheng 40210279\
 Part 4 - Alexandre Casanova-Frascarella\
-Part 5 - Jasdeep Sandhu
+Part 5 - Jasdeep Sandhu 40266557\
