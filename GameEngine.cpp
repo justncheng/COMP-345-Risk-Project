@@ -1,14 +1,33 @@
-#include "GameEngine.h"
+#include "../GameEngine.h"
 
-GameEngine::GameEngine() : currentState(Start) {}
+// default constructor
+GameEngine::GameEngine() {
+    currentState = new GameState(Start);
+}
 
-GameEngine::~GameEngine() {}
+// copy constructor
+GameEngine::GameEngine(const GameEngine& other) {
+    currentState = new GameState(*(other.currentState));
+}
+
+// assignment operator
+GameEngine& GameEngine::operator=(const GameEngine& other) {
+    if(this != &other) {
+        delete currentState; // free existing resource
+        currentState = new GameState(*(other.currentState)); // deep copy
+    }
+    return *this;
+}
+
+GameEngine::~GameEngine() {
+    delete currentState; // free allocated memory
+}
 
 void GameEngine::transition(const string& command) {
-    switch(currentState) {
+    switch(*currentState) {
         case Start:
             if (command == "loadmap") {
-                currentState = MapLoaded;
+                *currentState = MapLoaded;
                 cout << "Map Loaded" << endl;
             }
             else {
@@ -18,7 +37,7 @@ void GameEngine::transition(const string& command) {
 
         case MapLoaded:
             if(command == "validatemap") {
-                currentState = MapValidated;
+                *currentState = MapValidated;
                 cout << "Map Validated" << endl;
             }
             else if(command == "loadmap") {
@@ -30,7 +49,7 @@ void GameEngine::transition(const string& command) {
             break;
         case MapValidated:
             if(command == "addplayer") {
-                currentState = PlayersAdded;
+                *currentState = PlayersAdded;
                 cout << "Player Added" << endl;
             }
             else {
@@ -39,11 +58,11 @@ void GameEngine::transition(const string& command) {
             break;
         case PlayersAdded:
             if(command == "assigncountries") {
-                currentState = AssignReinforcements;
-                cout << "Reinforcements Assigned" << endl;
+                *currentState = AssignReinforcements;
+                cout << "Reinforcements/countries Assigned" << endl;
             }
             else if(command == "addplayer") {
-                currentState = PlayersAdded;
+                *currentState = PlayersAdded;
                 cout << "Another Player Added" << endl;
             }
             else {
@@ -52,7 +71,7 @@ void GameEngine::transition(const string& command) {
             break;
         case AssignReinforcements:
             if(command == "issueorder") {
-                currentState = IssueOrders;
+                *currentState = IssueOrders;
                 cout << "Orders Issued" << endl;
             }
             else {
@@ -61,11 +80,11 @@ void GameEngine::transition(const string& command) {
             break;
         case IssueOrders:
             if(command == "endissueorders") {
-                currentState = ExecuteOrders;
+                *currentState = ExecuteOrders;
                 cout << "Orders Executed" << endl;
             }
             else if(command == "issueorder") {
-                currentState = IssueOrders;
+                *currentState = IssueOrders;
                 cout << "More Orders Issued" << endl;
             }
             else {
@@ -74,15 +93,15 @@ void GameEngine::transition(const string& command) {
             break;
         case ExecuteOrders:
             if(command == "win") {
-                currentState = Win;
+                *currentState = Win;
                 cout << "Game Won. Enter 'end' to end the game or 'play' to play another game" << endl;
             }
             else if (command == "execorder") {
-                currentState = ExecuteOrders;
+                *currentState = ExecuteOrders;
                 cout << "Another Order Executed" << endl;
             }
             else if (command == "endexecorders") {
-                currentState = AssignReinforcements;
+                *currentState = AssignReinforcements;
                 cout << "Orders Execution Phase Ended. Back to Assign Reinforcements." << endl;
             }
             else {
@@ -92,11 +111,11 @@ void GameEngine::transition(const string& command) {
 
         case Win:
             if(command == "end") {
-                currentState = End;
+                *currentState = End;
                 cout << "Game Ended" << endl;
             }
             else if (command == "play") {
-                currentState = Start;
+                *currentState = Start;
                 cout << "Starting a new game." << endl;
             }
             else {
@@ -110,7 +129,7 @@ void GameEngine::transition(const string& command) {
 }
 
 string GameEngine::getStateString() const {
-    switch(currentState) {
+    switch(*currentState) {
         case Start: return "Start";
         case MapLoaded: return "MapLoaded";
         case MapValidated: return "MapValidated";
