@@ -1,44 +1,44 @@
 #include "Map.h"
 #include <iostream>
 
-// Test driver that loads several files and runs validation checks.
-// The function required by your assignment: testLoadMaps()
+/**
+ * @brief Test function to demonstrate map loading and validation
+ */
 void testLoadMaps() {
-    std::cout << "=== testLoadMaps() ===\n";
-
-    // Put the filenames you want to test here.
-    // Use the exact filenames you have on disk (e.g., "chicago.map", "england.map", "florida.map")
-    std::vector<std::string> filenames = {
-        "chicago.map",
-        "england.map",
-        "florida.map"
+    std::cout << "=== Testing Map Loading and Validation ===" << std::endl;
+    
+    MapLoader loader;
+    
+    // Test with valid map files
+    std::vector<std::string> testFiles = {
+        "Chicago.map",
+        "England.map", 
+        "Florida.map"
     };
-
-    for (const auto& fname : filenames) {
-        std::cout << "\n--- Loading file: " << fname << " ---\n";
-        Map* m = MapLoader::loadMapFromFile(fname);
-        if (!m) {
-            std::cout << "Failed to open or parse file: " << fname << "\n";
-            continue;
+    
+    for (const std::string& filename : testFiles) {
+        std::cout << "\n--- Loading: " << filename << " ---" << std::endl;
+        
+        Map* map = loader.loadMap(filename);
+        if (map) {
+            std::cout << "Successfully loaded map!" << std::endl;
+            std::cout << *map << std::endl;
+            
+            // Validate the map
+            std::cout << "Validating map..." << std::endl;
+            bool isValid = map->validate();
+            
+            std::cout << "Map validation results:" << std::endl;
+            std::cout << "- Connected graph: " << (map->isConnectedGraph() ? "YES" : "NO") << std::endl;
+            std::cout << "- Connected continents: " << (map->continentsAreConnectedSubgraphs() ? "YES" : "NO") << std::endl;
+            std::cout << "- Territories in one continent: " << (map->territoriesBelongToOneContinent() ? "YES" : "NO") << std::endl;
+            std::cout << "- Overall valid: " << (isValid ? "YES" : "NO") << std::endl;
+            
+            delete map;
+        } else {
+            std::cout << "Failed to load map!" << std::endl;
         }
-        // Print the map content
-        std::cout << *m << "\n";
-
-        // Run validation
-        std::string msg;
-        bool ok = m->validate(msg);
-        std::cout << "Validation result: " << (ok ? "VALID" : "INVALID") << " -> " << msg << "\n";
-
-        // Detailed checks (useful for debugging)
-        std::cout << " - isConnectedGraph(): " << (m->isConnectedGraph() ? "yes" : "no") << "\n";
-        std::cout << " - continentsAreConnected(): " << (m->continentsAreConnected() ? "yes" : "no") << "\n";
-        std::cout << " - eachCountryOneContinent(): " << (m->eachCountryOneContinent() ? "yes" : "no") << "\n";
-
-        delete m; // free memory
     }
-}
-
-int main() {
-    testLoadMaps();
-    return 0;
+    
+    std::cout << "\n=== Map Testing Complete ===" << std::endl;
 }
