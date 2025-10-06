@@ -1,4 +1,4 @@
-#include "../GameEngine.h"
+#include "GameEngine.h"
 using namespace std;
 
 void testGameStates() {
