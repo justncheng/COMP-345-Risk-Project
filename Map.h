@@ -6,122 +6,120 @@
 #include <string>
 #include <memory>
 
-// Forward declaration
-class Player;
+class Player; // Forward declaration
 
-/**
- * @class Territory
- * @brief Represents a territory in the Warzone game map
- */
+// Territory class
 class Territory {
-private:
-    std::string name;
-    int x, y;
-    std::string continent;
-    std::vector<Territory*> adjacentTerritories;
-    Player* owner;
-    int armyUnits;
-
 public:
-    // Constructors
     Territory(const std::string& name, int x, int y, const std::string& continent);
-    Territory(const Territory& other); // Copy constructor
-    Territory& operator=(const Territory& other); // Assignment operator
     
-    // Getters and setters
-    std::string getName() const;
-    int getX() const;
-    int getY() const;
-    std::string getContinent() const;
-    std::vector<Territory*> getAdjacentTerritories() const;
-    Player* getOwner() const;
-    int getArmyUnits() const;
-    
-    void setOwner(Player* newOwner);
-    void setArmyUnits(int units);
-    void addAdjacentTerritory(Territory* territory);
-    
-    // Stream insertion operator
-    friend std::ostream& operator<<(std::ostream& os, const Territory& territory);
-};
-
-/**
- * @class Continent
- * @brief Represents a continent containing multiple territories
- */
-class Continent {
-private:
-    std::string name;
-    int bonusValue;
-    std::vector<Territory*> territories;
-
-public:
-    Continent(const std::string& name, int bonusValue);
-    Continent(const Continent& other); // Copy constructor
-    Continent& operator=(const Continent& other); // Assignment operator
+    // Rule of Three
+    Territory(const Territory& other);
+    Territory& operator=(const Territory& other);
+    ~Territory();
     
     // Getters
     std::string getName() const;
-    int getBonusValue() const;
-    std::vector<Territory*> getTerritories() const;
+    std::string getContinent() const;
+    Player* getOwner() const;
+    int getArmies() const;
     
-    void addTerritory(Territory* territory);
+    // Setters
+    void setOwner(Player* owner);
+    void setArmies(int armies);
     
-    // Stream insertion operator
-    friend std::ostream& operator<<(std::ostream& os, const Continent& continent);
+    // Adjacency management
+    void addAdjacentTerritory(Territory* territory);
+    const std::vector<Territory*>& getAdjacentTerritories() const;
+    
+    // Stream insertion
+    friend std::ostream& operator<<(std::ostream& os, const Territory& territory);
+
+private:
+    std::string* name;
+    int x;
+    int y;
+    std::string* continent;
+    Player* owner;
+    int armies;
+    std::vector<Territory*> adjacentTerritories;
 };
 
-/**
- * @class Map
- * @brief Represents the game map as a connected graph
- */
-class Map {
-private:
-    std::vector<Territory*> territories;
-    std::vector<Continent*> continents;
+// Continent class
+class Continent {
+public:
+    Continent(const std::string& name, int bonus);
+    
+    // Rule of Three
+    Continent(const Continent& other);
+    Continent& operator=(const Continent& other);
+    ~Continent();
+    
+    // Getters
+    std::string getName() const;
+    int getBonus() const;
+    
+    // Territory management
+    void addTerritory(Territory* territory);
+    const std::vector<Territory*>& getTerritories() const;
+    
+    // Stream insertion
+    friend std::ostream& operator<<(std::ostream& os, const Continent& continent);
 
+private:
+    std::string* name;
+    int bonus;
+    std::vector<Territory*> territories;
+};
+
+// Map class
+class Map {
 public:
     Map();
-    Map(const Map& other); // Copy constructor
-    Map& operator=(const Map& other); // Assignment operator
+    
+    // Rule of Three
+    Map(const Map& other);
+    Map& operator=(const Map& other);
     ~Map();
     
-    // Territory and continent management
+    // Territory and Continent management
     void addTerritory(Territory* territory);
     void addContinent(Continent* continent);
-    std::vector<Territory*> getTerritories() const;
-    std::vector<Continent*> getContinents() const;
+    
+    // Getters
+    const std::vector<Territory*>& getTerritories() const;
+    const std::vector<Continent*>& getContinents() const;
     Territory* getTerritoryByName(const std::string& name) const;
-    Continent* getContinentByName(const std::string& name) const;
     
     // Validation methods
     bool validate();
     bool isConnectedGraph();
     bool continentsAreConnectedSubgraphs();
-    bool territoriesBelongToOneContinent();
+    bool eachCountryInOneContinent();
+    
+    // Stream insertion
+    friend std::ostream& operator<<(std::ostream& os, const Map& map);
+
+private:
+    std::vector<Territory*> territories;
+    std::vector<Continent*> continents;
     
     // Helper methods for graph traversal
-    void depthFirstSearch(Territory* start, std::vector<Territory*>& visited);
-    void continentDFS(Territory* start, const std::string& continent, std::vector<Territory*>& visited);
-    
-    // Stream insertion operator
-    friend std::ostream& operator<<(std::ostream& os, const Map& map);
+    void dfs(Territory* territory, std::vector<bool>& visited);
+    void dfsContinent(Continent* continent, Territory* territory, std::vector<bool>& visited);
 };
 
-/**
- * @class MapLoader
- * @brief Loads map files and creates Map objects
- */
+// MapLoader class
 class MapLoader {
 public:
-    MapLoader();
-    MapLoader(const MapLoader& other); // Copy constructor
-    MapLoader& operator=(const MapLoader& other); // Assignment operator
+    static Map* loadMap(const std::string& filename);
     
-    Map* loadMap(const std::string& filename);
-    
-    // Stream insertion operator
-    friend std::ostream& operator<<(std::ostream& os, const MapLoader& loader);
+private:
+    static void parseContinents(Map* map, std::ifstream& file);
+    static void parseTerritories(Map* map, std::ifstream& file);
 };
 
-#endif // MAP_H
+// Free function for testing
+void testLoadMaps();
+
+#endif
