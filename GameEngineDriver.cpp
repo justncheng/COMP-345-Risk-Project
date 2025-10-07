@@ -2,6 +2,8 @@
 using namespace std;
 
 void testGameStates() {
+    cout << "=== Game States Testing ===\n\n";
+
     GameEngine gEngine;
     string command;
     cout << gEngine << endl;
@@ -10,8 +12,9 @@ void testGameStates() {
         cout << "Enter command: ";
         cin >> command;
         gEngine.transition(command);
-        cout << gEngine << endl;    
+        cout << "\n";
+        cout << gEngine << endl;
     }
 
-    
+    cout << "\n=== Game States Testing Complete ===";
 }

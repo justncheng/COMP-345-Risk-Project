@@ -3,14 +3,18 @@
 
 using namespace std;
 
-void testOrderLists() {
+void testOrdersLists() {
+	cout << "=== OrdersList Testing ===\n\n";
 
 	// Create dummy players and territories for testing
 	Player* player1 = new Player();
 	Player* player2 = new Player();
 
-	Territory* territoryA = new Territory("TerritoryA", player1);
-	Territory* territoryB = new Territory("TerritoryB", player2);
+	Territory* territoryA = new Territory("TerritoryA", 10, 40, "ContinentA");
+	Territory* territoryB = new Territory("TerritoryB", 20, 30, "ContinentA");
+
+	territoryA->setOwner(player1);
+	territoryB->setOwner(player2);
 
 	OrdersList list;
 
@@ -36,27 +40,29 @@ void testOrderLists() {
 	list.at(0).execute(); // Deploy
 	list.at(2).execute(); // Bomb
 
-	std::cout << "\nOrders List after executing some orders: " << list << std::endl;
+	std::cout << "Orders List after executing some orders: " << list << std::endl;
 
 	// Move an order
 	list.move(1, 4); // Move Advance to index 4
-	std::cout << "\nOrders List after moving an order: " << list << std::endl;
+	std::cout << "Orders List after moving an order: " << list << std::endl;
 
 	// Remove an order
 	list.remove(1); // Remove the order now at index 1
-	std::cout << "\nOrders List after removing an order: " << list << std::endl;
+	std::cout << "Orders List after removing an order: " << list << std::endl;
 
 	// Copy and assignment
 	OrdersList copy(list); // Copy constructor
-	std::cout << "\nCopied Orders List: " << copy << std::endl;
+	std::cout << "Copied Orders List: " << copy << std::endl;
 
 	OrdersList assigned;
 	assigned = list; // Assignment operator
-	std::cout << "\nAssigned Orders List: " << assigned << std::endl;
+	std::cout << "Assigned Orders List: " << assigned << std::endl;
 
 	// Clean up
 	delete player1;
 	delete player2;
 	delete territoryA;
 	delete territoryB;
+
+	cout << "=== Orders List Testing Complete ===\n\n";
 }

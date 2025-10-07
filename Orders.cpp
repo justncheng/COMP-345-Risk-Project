@@ -9,8 +9,8 @@ using namespace std;
 
 // Orders Base Class Implementation ----------------------------------------------------------------
 
-Order::Order() : name("Order"), executed(false), effect("") {} // Default constructor
-Order::Order(const std::string& name) : name(name), executed(false), effect("") {} // Parameterized constructor
+Order::Order() : name("Order"), executed(false), effect("None") {} // Default constructor
+Order::Order(const std::string& name) : name(name), executed(false), effect("None") {} // Parameterized constructor
 
 Order::Order(const Order& other) : name(other.name), executed(other.executed), effect(other.effect) {} // Copy constructor
 
@@ -45,6 +45,11 @@ void Order::setEffect(const std::string& effect) // Sets the effect description
 void Order::setName(const std::string& name) // Sets the name of the order
 {
 	this->name = name;
+}
+
+void Order::setExecuted(bool executed) // Sets the executed status
+{
+	this->executed = executed;
 }
 
 std::ostream& operator<<(std::ostream& os, const Order& order) // Stream insertion operator
@@ -97,8 +102,9 @@ void Deploy::execute() // Executes the Deploy order
 		cout << *this << endl;
 		return;
 	}
-	// setEffect("deployed " + to_string(armies) + " armies to " + target->getName() + "."); // To be implemented when Player and Territory classes are available
+	setEffect("deployed " + to_string(armies) + " armies to " + target->getName());
 	setName("Deploy (executed)");
+	setExecuted(true);
 }
 
 Order* Deploy::clone() const // Virtual constructor
@@ -108,9 +114,8 @@ Order* Deploy::clone() const // Virtual constructor
 
 std::string Deploy::toString() const //Converts Deploy order details to string
 {
-	return "Order: Deploy";
-	//return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
-	//	", Target: " + (target ? target->getName() : "None") + ", Armies: " + to_string(armies); // To be implemented when Player and Territory classes are available
+	return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
+", Target: " + (target ? target->getName() : "None") + ", Armies: " + to_string(armies);
 }
 
 std::ostream& operator<<(std::ostream& os, const Deploy& order)    
@@ -158,8 +163,9 @@ void Advance::execute() // Executes the Advance order
 		cout << *this << endl;
 		return;
 	}
-	//setEffect("advanced " + to_string(armies) + " armies from " + source->getName() + " to " + target->getName() + ".");) // To be implemented when Player and Territory classes are available
+	setEffect("advanced " + to_string(armies) + " armies from " + source->getName() + " to " + target->getName());
 	setName("Advance (executed)");
+	setExecuted(true);
 }
 
 Order* Advance::clone() const // Virtual constructor
@@ -169,11 +175,10 @@ Order* Advance::clone() const // Virtual constructor
 
 std::string Advance::toString() const // Converts Advance order details to string
 {
-	return "Order: Advance";
-	//return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
-	//	", Source: " + (source ? source->getName() : "None") +
-	//	", Target: " + (target ? target->getName() : "None") +
-	//	", Armies: " + to_string(armies); // To be implemented when Player and Territory classes are available
+	return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
+		", Source: " + (source ? source->getName() : "None") +
+		", Target: " + (target ? target->getName() : "None") +
+		", Armies: " + to_string(armies);
 }
 
 std::ostream& operator<<(std::ostream& os, const Advance& order) 
@@ -208,7 +213,7 @@ Bomb::~Bomb() {} // Destructor
 
 bool Bomb::validate() const // Validates the Bomb order
 {
-	return issuer && target && target->getOwner() != issuer; // To be implemented when Player and Territory classes are available
+	return issuer && target && target->getOwner() != issuer;
 }
 
 void Bomb::execute() // Executes the Bomb order
@@ -219,8 +224,9 @@ void Bomb::execute() // Executes the Bomb order
 		cout << *this << endl;
 		return;
 	}
-	//setEffect("bombed " + target->getName() + ".");
+	setEffect("bombed " + target->getName());
 	setName("Bomb (executed)");
+	setExecuted(true);
 }
 
 Order* Bomb::clone() const // Virtual constructor
@@ -230,9 +236,8 @@ Order* Bomb::clone() const // Virtual constructor
 
 std::string Bomb::toString() const // Converts Bomb order details to string
 {
-	return "Order: Bomb";
-	//return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
-	//	", Target: " + (target ? target->getName() : "None"); // To be implemented when Player and Territory classes are available
+	return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
+		", Target: " + (target ? target->getName() : "None");
 }
 
 std::ostream& operator<<(std::ostream& os, const Bomb& order) 
@@ -267,7 +272,7 @@ Blockade::~Blockade() {} // Destructor
 
 bool Blockade::validate() const // Validates the Blockade order
 {
-	return issuer && target && target->getOwner() == issuer; // To be implemented when Player and Territory classes are available
+	return issuer && target && target->getOwner() == issuer;
 }
 
 void Blockade::execute() // Executes the Blockade order
@@ -278,8 +283,9 @@ void Blockade::execute() // Executes the Blockade order
 		cout << *this << endl;
 		return;
 	}
-	//setEffect("blockaded " + target->getName() + ".");
+	setEffect("blockaded " + target->getName());
 	setName("Blockade (executed)");
+	setExecuted(true);
 }
 
 Order* Blockade::clone() const // Virtual constructor
@@ -289,9 +295,8 @@ Order* Blockade::clone() const // Virtual constructor
 
 std::string Blockade::toString() const // Converts Blockade order details to string
 {
-	return "Order: Blockade";
-	//return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
-	//	", Target: " + (target ? target->getName() : "None"); // To be implemented when Player and Territory classes are available
+	return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
+		", Target: " + (target ? target->getName() : "None");
 }
 
 std::ostream& operator<<(std::ostream& os, const Blockade& order) 
@@ -328,7 +333,7 @@ Airlift::~Airlift() {} // Destructor
 
 bool Airlift::validate() const // Validates the Airlift order
 {
-	return issuer && source && target && (source->getOwner() == issuer) && (source != target) && armies > 0; // To be implemented when Player and Territory classes are available
+	return issuer && source && target && (source->getOwner() == issuer) && (source != target) && armies > 0;
 }
 
 void Airlift::execute() // Executes the Airlift order
@@ -339,8 +344,9 @@ void Airlift::execute() // Executes the Airlift order
 		cout << *this << endl;
 		return;
 	}
-	//setEffect("airlifted " + to_string(armies) + " armies from " + source->getName() + " to " + target->getName() + "."); // To be implemented when Player and Territory classes are available
+	setEffect("airlifted " + to_string(armies) + " armies from " + source->getName() + " to " + target->getName());
 	setName("Airlift (executed)");
+	setExecuted(true);
 }
 
 Order* Airlift::clone() const // Virtual constructor
@@ -350,11 +356,10 @@ Order* Airlift::clone() const // Virtual constructor
 
 std::string Airlift::toString() const // Converts Airlift order details to string
 {
-	return "Order: Airlift";
-	//return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
-	//	", Source: " + (source ? source->getName() : "None") +
-	//	", Target: " + (target ? target->getName() : "None") +
-	//	", Armies: " + to_string(armies); // To be implemented when Player and Territory classes are available
+	return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
+		", Source: " + (source ? source->getName() : "None") +
+		", Target: " + (target ? target->getName() : "None") +
+		", Armies: " + to_string(armies);
 }
 
 std::ostream& operator<<(std::ostream& os, const Airlift& order) 
@@ -400,8 +405,9 @@ void Negotiate::execute() // Executes the Negotiate order
 		cout << *this << endl;
 		return;
 	}
-	//setEffect("negotiated temporary peace with " + targetPlayer->getName() + "."); // To be implemented when Player class is available
+	setEffect("negotiated temporary peace with " + targetPlayer->getName());
 	setName("Negotiate (executed)");
+	setExecuted(true);
 }
 
 Order* Negotiate::clone() const // Virtual constructor
@@ -411,9 +417,8 @@ Order* Negotiate::clone() const // Virtual constructor
 
 std::string Negotiate::toString() const // Converts Negotiate order details to string
 {
-	return "Order: Negotiate";
-	//return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
-	//	", Target Player: " + (targetPlayer ? targetPlayer->getName() : "None"); // To be implemented when Player class is available
+	return Order::toString() + ", Issuer: " + (issuer ? issuer->getName() : "None") +
+		", Target Player: " + (targetPlayer ? targetPlayer->getName() : "None");
 }
 
 std::ostream& operator<<(std::ostream& os, const Negotiate& order) 

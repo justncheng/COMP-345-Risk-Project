@@ -1,4 +1,6 @@
 ﻿#include "Cards.h"
+#include "Player.h"
+#include "Orders.h"
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
@@ -30,9 +32,35 @@ string Card::getTypeAsString() const {
     }
 }
 
-void Card::play(Player* /*player*/, Deck* deck, Hand* hand, const CardPlayContext& /*context*/) {
+void Card::play(Player* player, Deck* deck, Hand* hand, const CardPlayContext& context) {
     cout << "[Card] Played: " << getTypeAsString() << endl;
-    cout << "Would generate an Order and add to player's OrdersList." << endl;
+    cout << "Generated ";
+
+    switch (type) {
+    case CardType::Bomb:
+		player->issueOrder(Bomb(player, context.target));
+        cout << "Bomb";
+        break;
+    case CardType::Reinforcement:
+        break;
+    case CardType::Blockade:
+		player->issueOrder(Blockade(player, context.target));
+        cout << "Blockade";
+        break;
+    case CardType::Airlift:
+		player->issueOrder(Airlift(player, context.source, context.target, context.armies));
+		cout << "Airlift";
+        break;
+    case CardType::Diplomacy:
+		player->issueOrder(Negotiate(player, context.targetPlayer));
+		cout << "Diplomacy";
+        break;
+	default:
+		cout << "Unknown";
+        break;
+    }
+
+    cout << " Order and added it to " + player->getName() + "'s OrdersList.\n\n";
 
     // Capture type before removing this from the hand
     CardType currentType = this->getType();

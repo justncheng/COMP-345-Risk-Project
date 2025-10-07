@@ -18,6 +18,10 @@ public:
     Territory& operator=(const Territory& other);
     ~Territory();
     
+    //Comparison Operator Overloading
+    bool operator == (const Territory& territory);
+    bool operator != (const Territory& territory);
+
     // Getters
     std::string getName() const;
     std::string getContinent() const;

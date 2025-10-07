@@ -1,13 +1,18 @@
 #include "Player.h"
 
+int Player::playerCount = 0; //Initializes static variable
+
 Player::Player() //Default Constructor
 {
+	createPlayerName(); //Creates player name
     hand = new Hand(); //Creates empty hand
     ordersList = new OrdersList(); //Creates empty orders list
 }
 
 Player::Player(const Player& player) //Copy Constructor
 {
+    createPlayerName(); //Creates player name
+
     //Adds territories
     for(Territory* territory : player.territories)
     {
@@ -32,6 +37,8 @@ Player::~Player() //Destructor
 
 Player& Player::operator = (const Player& player) //Assignment Operator Overloading
 {
+    createPlayerName(); //Creates player name
+
     //Checks if the player is not equal to itself
     if (this != &player) 
     {
@@ -95,7 +102,9 @@ ostream& operator << (ostream &output, const Player &player) //Stream Insertion 
 {
     //Outputs the player's information
 
-    output << "Player's Territories: ";
+	output << "Player Name: " << player.name; //Outputs the player's name
+
+    output << "\nPlayer's Territories: ";
 
     //Outputs the player's list of territories as a comma-separated list
     for(Territory* territory : player.territories)
@@ -118,12 +127,12 @@ ostream& operator << (ostream &output, const Player &player) //Stream Insertion 
 
 list<Territory> Player::toDefend()
 {
-    return {Territory(), Territory()}; //Returns arbitrary list of territories
+    return {Territory("TerritoryA", 30, 50, "ContinentA"), Territory("TerritoryB", 20, 40, "ContinentA")}; //Returns arbitrary list of territories
 }
 
 list<Territory> Player::toAttack()
 {
-    return {Territory(), Territory(), Territory()}; //Returns arbitrary list of territories
+    return {Territory("TerritoryA", 10, 30, "ContinentB"), Territory("TerritoryB", 30, 20, "ContinentB"), Territory("TerritoryC", 40, 50, "ContinentB")}; //Returns arbitrary list of territories
 }
 
 void Player::issueOrder(Order& order)
@@ -155,6 +164,11 @@ void Player::setOrdersList(OrdersList* newOrdersList)
 
 //Accessor Methods (Getters)
 
+string Player::getName()
+{
+    return name;
+}
+
 list<Territory*> Player::getTerritories()
 {
     return territories;
@@ -168,4 +182,12 @@ Hand* Player::getHand()
 OrdersList* Player::getOrdersList()
 {
     return ordersList;
+}
+
+//Helper Function
+
+void Player::createPlayerName()
+{
+    playerCount++; //Increments playerCount variable
+    name = "Player" + to_string(playerCount); //Creates player name
 }

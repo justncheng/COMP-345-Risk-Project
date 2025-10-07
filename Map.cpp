@@ -2,12 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-
-// Player class (minimal implementation for Territory ownership)
-class Player {
-public:
-    Player() = default;
-};
+#include "Player.h"
 
 // Territory Implementation
 Territory::Territory(const std::string& name, int x, int y, const std::string& continent)
@@ -47,6 +42,38 @@ Territory::~Territory() {
     delete continent;
 }
 
+bool Territory::operator == (const Territory& territory) {
+    if ((*name == *territory.name) && (x == territory.x) && (y == territory.y) && (*continent == *territory.continent) && (armies == territory.armies)) {
+        if (owner != nullptr && territory.owner != nullptr) {
+            if (*owner != *territory.owner) {
+                return false;
+            }
+        }
+		else if (owner != territory.owner) { // make sure both are nullptr
+			return false;
+        }
+
+        if (adjacentTerritories.size() != territory.adjacentTerritories.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < adjacentTerritories.size(); i++) {
+            if (*adjacentTerritories[i] != *territory.adjacentTerritories[i]) {
+                return false;
+            }
+        }
+    }
+    else {
+        return false;
+	}
+
+    return true;
+}
+
+bool Territory::operator != (const Territory& territory) {
+	return !(*this == territory);
+}
+
 std::string Territory::getName() const { return *name; }
 std::string Territory::getContinent() const { return *continent; }
 Player* Territory::getOwner() const { return owner; }
@@ -64,7 +91,7 @@ const std::vector<Territory*>& Territory::getAdjacentTerritories() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const Territory& territory) {
-    os << "Territory: " << *territory.name << " (Continent: " << *territory.continent 
+    os << *territory.name << " (Continent: " << *territory.continent 
        << ", Armies: " << territory.armies << ")";
     return os;
 }

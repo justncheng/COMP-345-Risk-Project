@@ -2,7 +2,7 @@
 #include <iostream>
 
 void testLoadMaps() {
-    std::cout << "=== Testing Map Loading and Validation ===" << std::endl;
+    std::cout << "=== Testing Map Loading and Validation ===\n";
     
     // Test with valid map files
     std::vector<std::string> testFiles = {
@@ -45,5 +45,5 @@ void testLoadMaps() {
         std::cout << "Correctly rejected invalid map file" << std::endl;
     }
     
-    std::cout << "\n=== Map Testing Complete ===" << std::endl;
+    std::cout << "\n=== Map Testing Complete ===\n\n";
 }

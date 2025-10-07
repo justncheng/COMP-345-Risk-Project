@@ -35,12 +35,19 @@ class Player //Player class represents a player playing the game
         void setOrdersList(OrdersList* newOrdersList); //Sets orders list
 
         //Accessor Methods (Getters)
+		string getName(); //Returns name
         list<Territory*> getTerritories(); //Returns list of territories
         Hand* getHand(); //Returns hand
         OrdersList* getOrdersList(); //Returns orders list
 
     private:
+        //Helper Function
+        void createPlayerName();
+
         //Data Members
+		static int playerCount; //Static variable to keep track of number of players created
+
+        string name;
         list<Territory*> territories;
         Hand* hand;
         OrdersList* ordersList;

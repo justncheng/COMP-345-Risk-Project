@@ -144,6 +144,6 @@ string GameEngine::getStateString() const {
 }
 
 ostream& operator << (ostream& os, const GameEngine& gEngine) {
-    os << "Current Game State:" << gEngine.getStateString();
+    os << "Current Game State: " << gEngine.getStateString();
     return os;
 }

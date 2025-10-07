@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <iostream>
-//#include "GameEngine.h"
 #include "Player.h"
 #include "Map.h"
 
@@ -48,6 +47,7 @@ public:
 protected:
 	void setEffect(const std::string& effect); // Set the effect description of the order
 	void setName(const std::string& name); // Set the name of the order
+	void setExecuted(bool executed); // Set executed status
 
 private:
 	std::string name;
@@ -231,12 +231,6 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& os, const OrdersList& ordersList); // Stream insertion operator
 
-	/*
-	bool operator == (const OrdersList& ordersList) {return true;} //DECLARED FOR PLAYER FUNCTIONALITY, PLEASE IMPLEMENT
-    friend ostream& operator << (ostream &output, const OrdersList& ordersList) {return output;} //DECLARED FOR PLAYER FUNCTIONALITY, PLEASE IMPLEMENT
-    void add(Order order) {}; //DECLARED FOR PLAYER FUNCTIONALITY, PLEASE IMPLEMENT
-	*/
-
 private:
 	void clear(); // Clear all orders from the list
 	void deepCopy(const OrdersList& other); // Deep copy from another OrdersList
@@ -245,5 +239,3 @@ private:
 	// Class members
 	std::vector<Order*> orders{}; // Vector of pointers to orders
 };
-
-void testOrderLists(); // Function to test OrdersList class

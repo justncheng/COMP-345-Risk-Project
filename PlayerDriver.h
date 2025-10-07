@@ -1,4 +1,4 @@
 #pragma once
 
 // Function prototypes
-void testCards(); // Function to test Cards functionality
+void testPlayers(); // Function to test Players functionality

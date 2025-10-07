@@ -1,18 +1,14 @@
-//#include "MapDriver.h" UNCOMMENT WHEN IMPLEMENTED
+#include "MapDriver.h"
 #include "PlayerDriver.h"
 #include "OrdersDriver.h"
 #include "CardsDriver.h"
-//#include "GameEngineDriver.h" UNCOMMENT WHEN IMPLEMENTED
-
-void testPlayers();
-void testOrderLists();
-void testCards();
+#include "GameEngineDriver.h"
 
 int main() 
 {
-    //testLoadMaps(); UNCOMMENT WHEN IMPLEMENTED
+    testLoadMaps();
     testPlayers();
-	testOrderLists();
+	testOrdersLists();
     testCards();
     testGameStates(); 
     return 0;
