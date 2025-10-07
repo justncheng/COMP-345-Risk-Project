@@ -4,6 +4,15 @@
 #include <algorithm>
 #include "Player.h"
 
+//Free Helper Function
+bool caseInsenstiveEquals(const std::string& a, const std::string& b) {
+    if (a.size() != b.size()) return false;
+    for (size_t i = 0; i < a.size(); i++) {
+        if (tolower(a[i]) != tolower(b[i])) return false;
+    }
+    return true;
+}
+
 // Territory Implementation
 Territory::Territory(const std::string& name, int x, int y, const std::string& continent)
     : name(new std::string(name)), x(x), y(y), continent(new std::string(continent)), 
@@ -346,11 +355,11 @@ Map* MapLoader::loadMap(const std::string& filename) {
         if (line.empty() || line[0] == ';') continue;
         
         // Check for section headers
-        if (line == "[Continents]") {
+        if (caseInsenstiveEquals(line, "[Continents]")) {
             inContinentsSection = true;
             inTerritoriesSection = false;
             continue;
-        } else if (line == "[Territories]") {
+        } else if (caseInsenstiveEquals(line, "[Territories]")) {
             inContinentsSection = false;
             inTerritoriesSection = true;
             continue;

@@ -117,13 +117,6 @@ private:
 class MapLoader {
 public:
     static Map* loadMap(const std::string& filename);
-    
-private:
-    static void parseContinents(Map* map, std::ifstream& file);
-    static void parseTerritories(Map* map, std::ifstream& file);
 };
-
-// Free function for testing
-void testLoadMaps();
 
 #endif

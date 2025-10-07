@@ -42,6 +42,8 @@ void Card::play(Player* player, Deck* deck, Hand* hand, const CardPlayContext& c
         cout << "Bomb";
         break;
     case CardType::Reinforcement:
+        player->issueOrder(Deploy(player, context.target, context.armies));
+        cout << "Reinforcement";
         break;
     case CardType::Blockade:
 		player->issueOrder(Blockade(player, context.target));
