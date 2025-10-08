@@ -1,5 +1,5 @@
 # COMP-345-Risk-Project
-Project for COMP 345 to develop the 'Warzone' version of Risk in C++
+Project for COMP 345 to develop the 'Warzone' version of the Risk game in C++
 
 Part 1 - Andro Razk\
 Part 2 - Marissa Jones 40305825\
