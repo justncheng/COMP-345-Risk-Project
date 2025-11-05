@@ -1,5 +1,4 @@
-#include "CommandProcessing.h";
-#include "GameEngine.h"
+# include "../CommandProcessing.h";
 
 // Command Class Implementation:
 
@@ -61,7 +60,7 @@
 
     // Default Constructor
     CommandProcessor::CommandProcessor() {
-		commands = new vector<Command*>();
+        // commands is a vector of Command pointers and 
         currentState = new GameState(Start);
     }
 
@@ -127,12 +126,6 @@
         commands->push_back(cmd);
     }
 
-    // set method
-    void CommandProcessor::setCurrentState(GameState state)
-    {
-		*currentState = state;
-    }
-
     // get methods
     Command* CommandProcessor::getCommand() {
         if(!commands->empty()) {
@@ -151,7 +144,7 @@
     }
 
     // validate method
-    bool CommandProcessor::validate(Command* cmd) {
+    void CommandProcessor::validate(Command* cmd) {
         string cmdStr = cmd->getCommand();
 
         // Command parser for the name 
@@ -167,15 +160,12 @@
             cmdName = cmdStr;   
         }
 
-		bool isValid = false;
-
         switch(*currentState) {
             case Start:
                 if(cmdName == "loadmap") {
                     if(!cmdArg.empty()) {
                         cmd->saveEffect("Map " + cmdArg + " loaded successfully.");
                         *currentState = MapLoaded;
-						isValid = true;
                     }
                     else {
                         cmd->saveEffect("Invalid. Error: No map file specified.");
@@ -189,16 +179,14 @@
                 if(cmdName == "loadmap") {
                     if(!cmdArg.empty()) {
                         cmd->saveEffect("Map " + cmdArg + " loaded successfully.");
-                        isValid = true;
                     }
                     else {
                         cmd->saveEffect("Invalid. Error: No map file specified.");
                     }
                 }
                 else if(cmdName == "validatemap") {
-                    cmd->saveEffect("Map validation successful.");
+                    cmd->saveEffect("Map validated successfully.");
                     *currentState = MapValidated;
-                    isValid = true;
                 }
                 else {
                     cmd->saveEffect("Invalid command in MapLoaded state.");
@@ -209,7 +197,6 @@
                     if(!cmdArg.empty()) {
                         cmd->saveEffect("Player " + cmdArg + " added successfully.");
                         *currentState = PlayersAdded;
-                        isValid = true;
                     }
                     else {
                         cmd->saveEffect("Invalid. Error: Player name not specified.");
@@ -223,7 +210,6 @@
                 if(cmdName == "addplayer") {
                     if(!cmdArg.empty()) {
                         cmd->saveEffect("Player " + cmdArg + " added successfully.");
-                        isValid = true;
                     }
                     else {
                         cmd->saveEffect("Invalid. Error: Player name not specified.");
@@ -232,7 +218,6 @@
                 else if(cmdName == "gamestart") {
                     cmd->saveEffect("The game has begun.");
                     *currentState = AssignReinforcements;
-                    isValid = true;
                 }
                 else {
                     cmd->saveEffect("Invalid command in PlayersAdded state.");
@@ -242,20 +227,16 @@
                 if(cmdName == "quit") {
                     cmd->saveEffect("Game ended. Exiting...");
                     *currentState = End;
-                    isValid = true;
                 }
                 else if (cmdName == "replay") {
                     cmd->saveEffect("Game restarted. Back to Start now.");
                     *currentState = Start;
-                    isValid = true;
                 }
                 else {
                     cmd->saveEffect("Invalid command in Win state.");
                 }
                 break;
         }
-
-        return isValid;
     }
 
 // FileCommandProcessorAdapter Class Implementation

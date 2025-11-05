@@ -2,18 +2,20 @@
 
 #include <string>
 #include <iostream>
-#include <cstdlib>
-#include <vector>
 using namespace std;
 
-// Forward declarations
-class CommandProcessor;
-class Player;
-class Map;
-class Deck;
-
 // Finite State Enum
-enum GameState;
+enum GameState {
+    Start,
+    MapLoaded,
+    MapValidated,
+    PlayersAdded,
+    AssignReinforcements,
+    IssueOrders,
+    ExecuteOrders,
+    Win,
+    End
+};
 
 // Game Engine class
 class GameEngine {
@@ -31,8 +33,6 @@ class GameEngine {
         ~GameEngine();
         // function to transition between states
         void transition(const string& command);
-		// function to handle the startup phase
-        void startupPhase(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck);
         // stream inssertion operator overload 
         friend ostream& operator << (ostream& os, const GameEngine& gEngine);
 

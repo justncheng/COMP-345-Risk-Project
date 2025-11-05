@@ -6,6 +6,10 @@
 
 int main() 
 {
-    testStartupPhase();
+    testLoadMaps();
+    testPlayers();
+	testOrdersLists();
+    testCards();
+    testGameStates(); 
     return 0;
 }
