@@ -6,15 +6,14 @@
 #include <fstream>
 using namespace std;
 
-// Finite State Enum
 enum GameState {
     Start,
     MapLoaded,
     MapValidated,
     PlayersAdded,
     AssignReinforcements,
-    // IssueOrders,
-    // ExecuteOrders,
+    IssueOrders,
+    ExecuteOrders,
     Win,
     End
 };
@@ -58,9 +57,6 @@ class CommandProcessor {
     private:
         vector<Command*>* commands;  // commands is a pointer to a vector object that holds pointers to Command objects
         GameState* currentState;     // currentState is a pointer to a GameState enum
-        
-        virtual void readCommand();
-        
 
     public:
         // Default Constructor
@@ -81,6 +77,12 @@ class CommandProcessor {
         // Stream Insertion operator
         friend ostream& operator<<(ostream& os, const CommandProcessor& cp);
 
+		// readCommand method
+        virtual void readCommand();
+
+        // set method
+		void setCurrentState(GameState state);
+
         // get methods
         Command* getCommand();
         GameState getCurrentState() const;
@@ -90,7 +92,7 @@ class CommandProcessor {
         void saveCommand(Command* cmd);
 
         // validate method
-        void validate(Command* cmd);
+        bool validate(Command* cmd);
 
 };
 
@@ -99,9 +101,6 @@ class FileCommandProcessorAdapter : public CommandProcessor {
     private:
         string* fileName;
         ifstream* commandFile;
-
-    protected:
-        void readCommand() override;
 
     public:
         // Parameterized Constructor
@@ -116,4 +115,6 @@ class FileCommandProcessorAdapter : public CommandProcessor {
         // Destructor
         ~FileCommandProcessorAdapter();
 
+		// Overriden readCommand method
+        void readCommand() override;
 };

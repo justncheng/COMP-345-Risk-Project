@@ -1,17 +1,25 @@
 #include "Player.h"
 
-int Player::playerCount = 0; //Initializes static variable
-
 Player::Player() //Default Constructor
 {
-	createPlayerName(); //Creates player name
+	name = "Unnamed Player"; //Sets player name
+    armies = 0; //Sets armies
+    hand = new Hand(); //Creates empty hand
+    ordersList = new OrdersList(); //Creates empty orders list
+}
+
+Player::Player(string name) //Parameterized Constructor
+{
+    this->name = name; //Sets player name
+    armies = 0; //Sets armies
     hand = new Hand(); //Creates empty hand
     ordersList = new OrdersList(); //Creates empty orders list
 }
 
 Player::Player(const Player& player) //Copy Constructor
 {
-    createPlayerName(); //Creates player name
+	name = player.name; //Copies player name
+    armies = player.armies; //Copies armies
 
     //Adds territories
     for(Territory* territory : player.territories)
@@ -37,7 +45,8 @@ Player::~Player() //Destructor
 
 Player& Player::operator = (const Player& player) //Assignment Operator Overloading
 {
-    createPlayerName(); //Creates player name
+	name = player.name; //Copies player name
+    armies = player.armies; //Copies armies
 
     //Checks if the player is not equal to itself
     if (this != &player) 
@@ -90,7 +99,7 @@ bool Player::operator == (const Player& player) //Equals Operator Overloading
         }
     }
 
-    return (*hand == *player.hand) && (*ordersList == *player.ordersList); //Checks if the hands and orders lists are equal
+    return (name == player.name) && (armies == player.armies) && (*hand == *player.hand) && (*ordersList == *player.ordersList); //Checks if the names, hands, and orders lists are equal
 }
 
 bool Player::operator != (const Player& player) //Not Equals Operator Overloading
@@ -102,9 +111,7 @@ ostream& operator << (ostream &output, const Player &player) //Stream Insertion 
 {
     //Outputs the player's information
 
-	output << "Player Name: " << player.name; //Outputs the player's name
-
-    output << "\nPlayer's Territories: ";
+    output << "\n" << player.name << "'s Territories: ";
 
     //Outputs the player's list of territories as a comma-separated list
     for(Territory* territory : player.territories)
@@ -117,8 +124,9 @@ ostream& operator << (ostream &output, const Player &player) //Stream Insertion 
         }
     }
  
-    output << "\nPlayer's Hand: " << *(player.hand); //Outputs the player's hand
-    output << "\nPlayer's Orders List: " << *(player.ordersList); //Outputs the player's orders list
+    output << "\n" + player.name + "'s Hand: " << *(player.hand); //Outputs the player's hand
+    output << "\n" + player.name + "'s Orders List: " << *(player.ordersList); //Outputs the player's orders list
+    output << player.name << "'s armies: " << player.armies << "\n"; //Outputs the player's armies
 
     return output;
 }
@@ -140,7 +148,22 @@ void Player::issueOrder(Order& order)
     ordersList->add(order); //Adds the order to the orders list
 }
 
+void Player::addTerritory(Territory* territory)
+{
+	territories.push_back(territory); //Adds the territory to the player's list of territories
+}
+
 //Mutator Methods (Setters)
+
+void Player::setName(string newName)
+{
+    name = newName;
+}
+
+void Player::setArmies(int armyNumber)
+{
+    armies = armyNumber;
+}
 
 void Player::setTerritories(list<Territory*> newTerritories)
 {
@@ -169,6 +192,11 @@ string Player::getName()
     return name;
 }
 
+int Player::getArmies()
+{
+    return armies;
+}
+
 list<Territory*> Player::getTerritories()
 {
     return territories;
@@ -182,12 +210,4 @@ Hand* Player::getHand()
 OrdersList* Player::getOrdersList()
 {
     return ordersList;
-}
-
-//Helper Function
-
-void Player::createPlayerName()
-{
-    playerCount++; //Increments playerCount variable
-    name = "Player" + to_string(playerCount); //Creates player name
 }
