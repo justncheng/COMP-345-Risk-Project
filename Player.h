@@ -18,6 +18,7 @@ class Player //Player class represents a player playing the game
 {
     public:
         Player(); //Default Constructor
+        Player(string name); //Parameterized Constructor
         Player(const Player& player); //Copy Constructor
         ~Player(); //Destructor
         Player& operator = (const Player& player); //Assignment Operator Overloading
@@ -29,25 +30,26 @@ class Player //Player class represents a player playing the game
         list<Territory> toAttack(); //Returns list of territories to attack
         void issueOrder(Order& order); //Issues an order
 
+		void addTerritory(Territory* territory); //Adds a territory to the player's list of territories
+
         //Mutator Methods (Setters)
+        void setName(string newName);
+        void setArmies(int armyNumber);
         void setTerritories(list<Territory*> newTerritories); //Sets list of territories
         void setHand(Hand* newHand); //Sets hand
         void setOrdersList(OrdersList* newOrdersList); //Sets orders list
 
         //Accessor Methods (Getters)
 		string getName(); //Returns name
+        int getArmies();
         list<Territory*> getTerritories(); //Returns list of territories
         Hand* getHand(); //Returns hand
         OrdersList* getOrdersList(); //Returns orders list
 
     private:
-        //Helper Function
-        void createPlayerName();
-
         //Data Members
-		static int playerCount; //Static variable to keep track of number of players created
-
         string name;
+        int armies;
         list<Territory*> territories;
         Hand* hand;
         OrdersList* ordersList;
