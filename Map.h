@@ -39,6 +39,9 @@ public:
     // Stream insertion
     friend std::ostream& operator<<(std::ostream& os, const Territory& territory);
 
+    // Verify Adjacency
+    bool isAdjacentTo(const Territory* other) const;
+
 private:
     std::string* name;
     int x;

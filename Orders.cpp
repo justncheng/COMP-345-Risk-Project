@@ -2,8 +2,9 @@
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
-#include <sstream>
+#include <sstream>  
 #include <typeinfo>
+#include <random>   
 
 using namespace std;
 
@@ -91,20 +92,27 @@ Deploy::~Deploy() {} // Destructor
 
 bool Deploy::validate() const // Validates the Deploy order
 {
-	return issuer != nullptr && target != nullptr && armies > 0;
+	if (!(issuer && target) || armies <= 0)
+		return false;
+
+	// must deploy on your own territory
+	return (target->getOwner() == issuer);
 }
 
 void Deploy::execute() // Executes the Deploy order
 {
-	if (!validate())
-	{
-		setEffect("Deploy order execution failed: Invalid order.");
-		cout << *this << endl;
+	if (!validate()) {
+		setEffect("Deploy invalid (must own target / bad armies).");
+		setExecuted(false);
+		std::cout << *this << std::endl;
 		return;
 	}
-	setEffect("deployed " + to_string(armies) + " armies to " + target->getName());
+
+	target->setArmies(target->getArmies() + armies);
+	setEffect("deployed " + std::to_string(armies) + " to " + target->getName());
 	setName("Deploy (executed)");
 	setExecuted(true);
+	std::cout << *this << std::endl;
 }
 
 Order* Deploy::clone() const // Virtual constructor
@@ -152,20 +160,79 @@ Advance::~Advance() {} // Destructor
 
 bool Advance::validate() const // Validates the Advance order
 {
-	return issuer && source && (target != source) && armies > 0;
+	if (!(issuer && source && target) || source == target || armies <= 0)
+		return false;
+
+	// must own the source territory
+	if (source->getOwner() != issuer)
+		return false;
+
+	// must have enough armies in source
+	if (source->getArmies() < armies)
+		return false;
+
+	// must be adjacent
+	if (!source->isAdjacentTo(target))
+		return false;
+
+	return true;
 }
 
 void Advance::execute() // Executes the Advance order
 {
-	if (!validate())
-	{
-		setEffect("Advance order execution failed: Invalid order.");
-		cout << *this << endl;
+	if (!validate()) {
+		setEffect("Advance invalid (ownership/armies/adjacency).");
+		setExecuted(false);
+		std::cout << *this << std::endl;
 		return;
 	}
-	setEffect("advanced " + to_string(armies) + " armies from " + source->getName() + " to " + target->getName());
+
+	Player* defender = target->getOwner();
+
+	// Friendly move (same owner)
+	if (defender == issuer) {
+		source->setArmies(source->getArmies() - armies);
+		target->setArmies(target->getArmies() + armies);
+		setEffect("moved " + std::to_string(armies) + " from " + source->getName() + " to " + target->getName());
+		setName("Advance (executed)");
+		setExecuted(true);
+		std::cout << *this << std::endl;
+		return;
+	}
+
+	// Hostile move — battle simulation
+	int atkSent = armies;
+	source->setArmies(source->getArmies() - atkSent);
+
+	int atk = atkSent;
+	int def = target->getArmies();
+
+	std::random_device rd; // Generate random numbers
+	std::mt19937 gen(rd()); // Mersenne Twister RNG
+	std::binomial_distribution<int> atkKillsDist(atk, 0.60); // Attacker kills 60% of defending armies
+	std::binomial_distribution<int> defKillsDist(def, 0.70); // Defender kills 70% of attacking armies
+
+	int atkKills = atkKillsDist(gen);
+	int defKills = defKillsDist(gen);
+
+	int defAfter = std::max(0, def - atkKills);
+	int atkAfter = std::max(0, atk - defKills);
+
+	if (defAfter == 0 && atkAfter > 0) {
+		// conquer: survivors occupy, transfer ownership
+		target->setArmies(atkAfter);
+		target->setOwner(issuer);
+		setEffect("attacked " + target->getName() + ": conquered with " + std::to_string(atkAfter) + " surviving.");
+	}
+	else {
+		// defender holds
+		target->setArmies(defAfter);
+		setEffect("attacked " + target->getName() + ": failed (def " + std::to_string(defAfter) + " left).");
+	}
+
 	setName("Advance (executed)");
 	setExecuted(true);
+	std::cout << *this << std::endl;
 }
 
 Order* Advance::clone() const // Virtual constructor
@@ -213,20 +280,44 @@ Bomb::~Bomb() {} // Destructor
 
 bool Bomb::validate() const // Validates the Bomb order
 {
-	return issuer && target && target->getOwner() != issuer;
+	if (!(issuer && target))
+		return false;
+
+	Player* tgtOwner = target->getOwner();
+	if (!tgtOwner || tgtOwner == issuer)
+		return false; // must target an enemy
+
+	// must be adjacent to at least one issuer-owned territory
+	bool adjacentToIssuer = false;
+	for (Territory* adj : target->getAdjacentTerritories()) {
+		if (adj && adj->getOwner() == issuer) {
+			adjacentToIssuer = true;
+			break;
+		}
+	}
+	if (!adjacentToIssuer)
+		return false;
+
+	return true;
 }
 
 void Bomb::execute() // Executes the Bomb order
 {
-	if (!validate())
-	{
-		setEffect("Bomb order execution failed: Invalid order.");
-		cout << *this << endl;
+	if (!validate()) {
+		setEffect("Bomb invalid (must target adjacent enemy).");
+		setExecuted(false);
+		std::cout << *this << std::endl;
 		return;
 	}
-	setEffect("bombed " + target->getName());
+
+	int cur = target->getArmies();
+	int removed = cur / 2; // remove half (floor)
+	target->setArmies(cur - removed);
+
+	setEffect("bombed " + target->getName() + " removing " + std::to_string(removed));
 	setName("Bomb (executed)");
 	setExecuted(true);
+	std::cout << *this << std::endl;
 }
 
 Order* Bomb::clone() const // Virtual constructor
@@ -272,20 +363,27 @@ Blockade::~Blockade() {} // Destructor
 
 bool Blockade::validate() const // Validates the Blockade order
 {
-	return issuer && target && target->getOwner() == issuer;
+	if (!(issuer && target))
+		return false;
+	return (target->getOwner() == issuer);
 }
 
 void Blockade::execute() // Executes the Blockade order
 {
-	if (!validate())
-	{
-		setEffect("Blockade order execution failed: Invalid order.");
-		cout << *this << endl;
+	if (!validate()) {
+		setEffect("Blockade invalid (must target own territory).");
+		setExecuted(false);
+		std::cout << *this << std::endl;
 		return;
 	}
-	setEffect("blockaded " + target->getName());
+
+	target->setArmies(target->getArmies() * 2);
+	target->setOwner(nullptr); // neutral player placeholder
+
+	setEffect("blockaded " + target->getName() + " (doubled, transferred to Neutral)");
 	setName("Blockade (executed)");
 	setExecuted(true);
+	std::cout << *this << std::endl;
 }
 
 Order* Blockade::clone() const // Virtual constructor
@@ -333,20 +431,35 @@ Airlift::~Airlift() {} // Destructor
 
 bool Airlift::validate() const // Validates the Airlift order
 {
-	return issuer && source && target && (source->getOwner() == issuer) && (source != target) && armies > 0;
+	if (!(issuer && source && target) || source == target || armies <= 0)
+		return false;
+
+	// must own both territories
+	if (source->getOwner() != issuer || target->getOwner() != issuer)
+		return false;
+
+	if (source->getArmies() < armies)
+		return false;
+
+	return true;
 }
 
-void Airlift::execute() // Executes the Airlift order
+void Airlift::execute()
 {
-	if (!validate())
-	{
-		setEffect("Airlift order execution failed: Invalid order.");
-		cout << *this << endl;
+	if (!validate()) {
+		setEffect("Airlift invalid (ownership/armies).");
+		setExecuted(false);
+		std::cout << *this << std::endl;
 		return;
 	}
-	setEffect("airlifted " + to_string(armies) + " armies from " + source->getName() + " to " + target->getName());
+
+	source->setArmies(source->getArmies() - armies);
+	target->setArmies(target->getArmies() + armies);
+
+	setEffect("airlifted " + std::to_string(armies) + " from " + source->getName() + " to " + target->getName());
 	setName("Airlift (executed)");
 	setExecuted(true);
+	std::cout << *this << std::endl;
 }
 
 Order* Airlift::clone() const // Virtual constructor

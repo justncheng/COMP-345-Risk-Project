@@ -8,7 +8,7 @@ int main()
 {
     testLoadMaps();
     testPlayers();
-	testOrdersLists();
+	testOrderExecution();
     testCards();
     testGameStates(); 
     return 0;
