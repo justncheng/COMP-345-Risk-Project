@@ -99,6 +99,13 @@ const std::vector<Territory*>& Territory::getAdjacentTerritories() const {
     return adjacentTerritories;
 }
 
+bool Territory::isAdjacentTo(const Territory* other) const {
+    for (Territory* adj : adjacentTerritories) {
+        if (adj == other) return true;
+    }
+    return false;
+}
+
 std::ostream& operator<<(std::ostream& os, const Territory& territory) {
     os << *territory.name << " (Continent: " << *territory.continent 
        << ", Armies: " << territory.armies << ")";

@@ -7,5 +7,6 @@
 int main() 
 {
     testStartupPhase();
+    testOrderExecution();
     return 0;
 }
