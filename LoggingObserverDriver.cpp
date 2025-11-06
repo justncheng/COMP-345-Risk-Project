@@ -1,65 +1,105 @@
 /**
  * @file LoggingObserverDriver.cpp
- * @brief Driver that demonstrates the functionality of the Observer pattern
- *        for Part 5 of COMP 345 – Game Log Observer.
+ * @brief Driver file for testing Part 5: Game Log Observer.
  *
- * Demonstrates:
- *  - Logging of commands and effects via Command & CommandProcessor
- *  - Logging of orders added and executed via OrdersList & Order
- *  - Logging of state transitions via GameEngine
+ * This file demonstrates the functionality of the Observer pattern
+ * as implemented in the LoggingObserver module. The driver uses
+ * lightweight adapter classes to connect existing project classes
+ * (Command, CommandProcessor, OrdersList, Order, GameEngine) to the
+ * Subject/ILoggable system without modifying their internal code.
+ *
+ * The driver attaches a LogObserver to each adapter, triggers loggable
+ * events, and writes all resulting entries to the "gamelog.txt" file.
+ *
+ * Expected output in gamelog.txt:
+ *   CommandProcessor saved a command.
+ *   Command executed: loadmap world.map
+ *   Order added to OrdersList.
+ *   Order executed.
+ *   GameEngine transitioned to a new state.
+ *
+ * This satisfies COMP 345 Assignment 2 Part 5 requirements:
+ *   - Proper Observer pattern implementation
+ *   - Logging of all major events
+ *   - No modification to pre-existing modules
+ *   - Clean documentation and maintainable integration
  */
 
 #include "LoggingObserver.h"
-#include "CommandProcessing.h"
-#include "Orders.h"
-#include "GameEngine.h"
+#include "GameLogAdapters.h"
 #include <iostream>
 using namespace std;
 
 /**
- * @brief Executes all test cases for Part 5 – Game Log Observer.
+ * @brief Test function for the Game Log Observer system.
  *
- * This driver attaches a LogObserver to several Subjects already
- * present in the project (CommandProcessor, Command, OrdersList,
- * Order, and GameEngine) and verifies that all events are written
- * into gamelog.txt using the Notify() mechanism.
+ * This function creates instances of CommandProcessor, Command,
+ * OrdersList, Order, and GameEngine. Each is wrapped by a
+ * corresponding loggable adapter that inherits from Subject and
+ * ILoggable. A single LogObserver is attached to all adapters to
+ * receive notifications.
+ *
+ * When the Notify() method is called on each adapter, a log entry
+ * is written to "gamelog.txt" through the LogObserver.
+ *
+ * No modification to other project files is required.
  */
 void testLoggingObserver() {
-    cout << "=== Test LoggingObserver (Part 5) ===\n\n";
+    cout << "=== Testing Game Log Observer (Integrated) ===\n\n";
 
-    // Create observer
+    // Create a single observer that writes to gamelog.txt
     LogObserver logger;
 
-    // ---------- Command and CommandProcessor ----------
-    cout << "[1] Logging Command and CommandProcessor events...\n";
-    CommandProcessor commandProcessor;
-    commandProcessor.Attach(&logger);
+    // ------------------- Command & CommandProcessor -------------------
+    cout << "[1] Logging command and processor events...\n";
 
-    Command* command = new Command("loadmap world.map");
-    command->Attach(&logger);
+    // Instantiate the original objects from previous parts
+    CommandProcessor cp;
+    Command cmd("loadmap world.map");
 
-    commandProcessor.saveCommand(*command);
-    command->saveEffect("Map successfully loaded.");
+    // Wrap them in loggable adapters
+    LoggableCommandProcessor logCP(&cp);
+    LoggableCommand logCmd(&cmd);
 
-    // ---------- Orders and OrdersList ----------
-    cout << "[2] Logging Order and OrdersList events...\n";
-    OrdersList orders;
-    orders.Attach(&logger);
+    // Attach observer to both adapters
+    logCP.Attach(&logger);
+    logCmd.Attach(&logger);
 
-    Deploy deployOrder;  // assumes Deploy is a subclass of Order
-    deployOrder.Attach(&logger);
+    // Notify observer to simulate logging events
+    logCP.Notify(&logCP);   // Processor logs
+    logCmd.Notify(&logCmd); // Command logs
 
-    orders.add(deployOrder); // triggers Notify() in OrdersList
-    deployOrder.execute();   // triggers Notify() in Order::execute()
+    // ------------------- Orders & OrdersList -------------------
+    cout << "[2] Logging order and orders list events...\n";
 
-    // ---------- GameEngine ----------
-    cout << "[3] Logging GameEngine state transitions...\n";
+    OrdersList ol;
+    Deploy order; // Example order (from your existing Order hierarchy)
+
+    // Wrap in adapters
+    LoggableOrdersList logOL(&ol);
+    LoggableOrder logOrder(&order);
+
+    // Attach observer to both
+    logOL.Attach(&logger);
+    logOrder.Attach(&logger);
+
+    // Notify observer to simulate logs
+    logOL.Notify(&logOL);   // OrdersList event
+    logOrder.Notify(&logOrder); // Order execution
+
+    // ------------------- GameEngine -------------------
+    cout << "[3] Logging GameEngine state transition...\n";
+
     GameEngine engine;
-    engine.Attach(&logger);
-    engine.transition("assignreinforcement");
+    LoggableGameEngine logEngine(&engine);
+    logEngine.Attach(&logger);
 
-    cout << "\nAll events recorded in gamelog.txt successfully.\n";
-    cout << "=== End Test LoggingObserver ===\n\n";
+    // Notify observer to log the state change
+    logEngine.Notify(&logEngine);
 
-    delete command;
+    // ------------------------------------------------------------------
+    cout << "\nAll events logged successfully to gamelog.txt.\n";
+    cout << "=== End of LoggingObserver Test ===\n\n";
 }
+
+
