@@ -54,6 +54,7 @@
 
     void Command::saveEffect(const string& newEffect) {
         *effect = newEffect;
+		Notify(this);
     }
 
 
@@ -125,6 +126,7 @@
 
     void CommandProcessor::saveCommand(Command* cmd) {
         commands->push_back(cmd);
+		Notify(this);
     }
 
     // set method
@@ -255,6 +257,7 @@
                 break;
         }
 
+		Notify(this);
         return isValid;
     }
 
