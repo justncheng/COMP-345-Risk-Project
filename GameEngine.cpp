@@ -32,47 +32,57 @@ void GameEngine::transition(const string& command) {
         case Start:
             if(command == "loadmap") {
                 *currentState = MapLoaded;
+				  Notify(this);
             }
             break;
         case MapLoaded:
             if(command == "validatemap") {
                 *currentState = MapValidated;
+				 Notify(this);
             }
             break;
         case MapValidated:
             if(command == "addplayer") {
                 *currentState = PlayersAdded;
+				 Notify(this);
             }
             break;
         case PlayersAdded:
             if(command == "gamestart") {
                 *currentState = AssignReinforcements;
+				 Notify(this);
             }
             break;
         case AssignReinforcements:
             if(command == "issueorder") {
                 *currentState = IssueOrders;
+				 Notify(this);
 			}
             break;
         case IssueOrders:
             if(command == "issueordersend") {
                 *currentState = ExecuteOrders;
+				 Notify(this);
 			}
             break;
 		case ExecuteOrders:
             if(command == "endexecorders") {
 				*currentState = AssignReinforcements;
+				 Notify(this);
             }
             else if(command == "win") {
                 *currentState = Win;
+				 Notify(this);
             }
             break;
         case Win:
             if(command == "replay") {
                 *currentState = Start;
+				 Notify(this);
             }
             else if(command == "quit") {
                 *currentState = End;
+				 Notify(this);
             }
             break;
         default:
@@ -230,4 +240,7 @@ string GameEngine::getStateString() const {
 ostream& operator << (ostream& os, const GameEngine& gEngine) {
     os << "Current Game State: " << gEngine.getStateString();
     return os;
+}
+string GameEngine::stringToLog() const {
+    return "GameEngine transitioned to state: " + getStateString();
 }
