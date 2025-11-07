@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include "LoggingObserver.h"
 using namespace std;
 
 enum GameState {
@@ -19,7 +20,7 @@ enum GameState {
 };
 
 // Command Class Definition
-class Command {
+class Command : public Subject, public ILoggable {
     private:
         // Dynamically allocated string variables
         string* command;
@@ -50,10 +51,12 @@ class Command {
 
         void saveEffect(const string& newEffect);
 
+		string stringToLog() const override;
+
 };
 
 // CommandProccesor Class Definition
-class CommandProcessor {
+class CommandProcessor : public Subject, public ILoggable  {
     private:
         vector<Command*>* commands;  // commands is a pointer to a vector object that holds pointers to Command objects
         GameState* currentState;     // currentState is a pointer to a GameState enum
@@ -93,6 +96,8 @@ class CommandProcessor {
 
         // validate method
         bool validate(Command* cmd);
+
+	 	string stringToLog() const override;
 
 };
 
