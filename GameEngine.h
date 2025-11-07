@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
+#include "LoggingObserver.h" 
 using namespace std;
 
 // Forward declarations
@@ -16,7 +17,7 @@ class Deck;
 enum GameState;
 
 // Game Engine class
-class GameEngine {
+class GameEngine public Subject, public ILoggable {
     private:
         // pointer data member for Game States
         GameState* currentState;
@@ -33,6 +34,9 @@ class GameEngine {
         void transition(const string& command);
 		// function to handle the startup phase
         void startupPhase(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck);
+
+		 string stringToLog() const override;
+			
         // stream inssertion operator overload 
         friend ostream& operator << (ostream& os, const GameEngine& gEngine);
 
