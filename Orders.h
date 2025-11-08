@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Player.h"
 #include "Map.h"
+#include "LoggingObserver.h"
 
 using namespace std;
 
@@ -23,7 +24,7 @@ Base Order class representing a generic order in the game.
 */
 
 
-class Order
+class Order : public Subject, public ILoggable 
 {
 public:
 	Order(); // Default constructor
@@ -31,7 +32,7 @@ public:
 	Order(const Order& other); // Copy constructor
 	Order& operator=(const Order& other); // Assignment operator
 	virtual ~Order(); // Destructor
-
+	string stringToLog() const override;
 
 	virtual bool validate() const = 0;	// Verify if order is valid
 	virtual void execute() = 0;	// Execute the order
@@ -208,7 +209,7 @@ private:
 
 // OrdersList Class ---------------------------------------------------------------------------------------------
 
-class OrdersList
+class OrdersList : public Subject, public ILoggable
 {
 public:
 
@@ -216,6 +217,7 @@ public:
 	OrdersList(const OrdersList& other); // Copy constructor
 	OrdersList& operator=(const OrdersList& other); // Assignment operator
 	~OrdersList(); // Destructor
+	string stringToLog() const override;
 
 	void add(const Order& order); // Add order to the list
 	void add(Order* order); // Add order pointer to the list
