@@ -5,6 +5,7 @@
 #include <sstream>  
 #include <typeinfo>
 #include <random>   
+#include "LoggingObserver.h"
 
 using namespace std;
 
@@ -23,6 +24,7 @@ Order& Order::operator=(const Order& other) // Assignment operator
 		executed = other.executed;
 		effect = other.effect;
 	}
+	Notify(this);
 	return *this;
 }
 
@@ -41,16 +43,19 @@ bool Order::isExecuted() const // Checks if order has been executed
 void Order::setEffect(const std::string& effect) // Sets the effect description
 {
 	this->effect = effect;
+	Notify(this);
 }
 
 void Order::setName(const std::string& name) // Sets the name of the order
 {
 	this->name = name;
+	Notify(this);
 }
 
 void Order::setExecuted(bool executed) // Sets the executed status
 {
 	this->executed = executed;
+	Notify(this);
 }
 
 std::ostream& operator<<(std::ostream& os, const Order& order) // Stream insertion operator
@@ -85,6 +90,7 @@ Deploy& Deploy::operator=(const Deploy& other) // Assignment operator
 		target = other.target;
 		armies = other.armies;
 	}
+	Notify(this);
 	return *this;
 }
 
@@ -105,6 +111,7 @@ void Deploy::execute() // Executes the Deploy order
 		setEffect("Deploy invalid (must own target / bad armies).");
 		setExecuted(false);
 		std::cout << *this << std::endl;
+		Notify(this);
 		return;
 	}
 
@@ -113,10 +120,12 @@ void Deploy::execute() // Executes the Deploy order
 	setName("Deploy (executed)");
 	setExecuted(true);
 	std::cout << *this << std::endl;
+	Notify(this);
 }
 
 Order* Deploy::clone() const // Virtual constructor
 {
+	Notify(this);
 	return new Deploy(*this);
 }
 
@@ -153,6 +162,7 @@ Advance& Advance::operator=(const Advance& other) // Assignment operator
 		target = other.target;
 		armies = other.armies;
 	}
+	Notify(this);
 	return *this;
 }
 
@@ -184,6 +194,7 @@ void Advance::execute() // Executes the Advance order
 		setEffect("Advance invalid (ownership/armies/adjacency).");
 		setExecuted(false);
 		std::cout << *this << std::endl;
+		Notify(this);
 		return;
 	}
 
@@ -197,10 +208,11 @@ void Advance::execute() // Executes the Advance order
 		setName("Advance (executed)");
 		setExecuted(true);
 		std::cout << *this << std::endl;
+		Notify(this);
 		return;
 	}
 
-	// Hostile move — battle simulation
+	// Hostile move â€” battle simulation
 	int atkSent = armies;
 	source->setArmies(source->getArmies() - atkSent);
 
@@ -233,10 +245,12 @@ void Advance::execute() // Executes the Advance order
 	setName("Advance (executed)");
 	setExecuted(true);
 	std::cout << *this << std::endl;
+	Notify(this);
 }
 
 Order* Advance::clone() const // Virtual constructor
 {
+	Notify(this);
 	return new Advance(*this);
 }
 
@@ -273,6 +287,7 @@ Bomb& Bomb::operator=(const Bomb& other) // Assignment operator
 		issuer = other.issuer;
 		target = other.target;
 	}
+	Notify(this);
 	return *this;
 }
 
@@ -307,6 +322,7 @@ void Bomb::execute() // Executes the Bomb order
 		setEffect("Bomb invalid (must target adjacent enemy).");
 		setExecuted(false);
 		std::cout << *this << std::endl;
+		Notify(this);
 		return;
 	}
 
@@ -318,10 +334,12 @@ void Bomb::execute() // Executes the Bomb order
 	setName("Bomb (executed)");
 	setExecuted(true);
 	std::cout << *this << std::endl;
+	Notify(this);
 }
 
 Order* Bomb::clone() const // Virtual constructor
 {
+	Notify(this);
 	return new Bomb(*this);
 }
 
@@ -356,6 +374,7 @@ Blockade& Blockade::operator=(const Blockade& other) // Assignment operator
 		issuer = other.issuer;
 		target = other.target;
 	}
+	Notify(this);
 	return *this;
 }
 
@@ -374,6 +393,7 @@ void Blockade::execute() // Executes the Blockade order
 		setEffect("Blockade invalid (must target own territory).");
 		setExecuted(false);
 		std::cout << *this << std::endl;
+		Notify(this);
 		return;
 	}
 
@@ -384,6 +404,7 @@ void Blockade::execute() // Executes the Blockade order
 	setName("Blockade (executed)");
 	setExecuted(true);
 	std::cout << *this << std::endl;
+	Notify(this);
 }
 
 Order* Blockade::clone() const // Virtual constructor
@@ -424,6 +445,7 @@ Airlift& Airlift::operator=(const Airlift& other) // Assignment operator
 		target = other.target;
 		armies = other.armies;
 	}
+	Notify(this);
 	return *this;
 }
 
@@ -450,6 +472,7 @@ void Airlift::execute()
 		setEffect("Airlift invalid (ownership/armies).");
 		setExecuted(false);
 		std::cout << *this << std::endl;
+		Notify(this);
 		return;
 	}
 
@@ -460,10 +483,12 @@ void Airlift::execute()
 	setName("Airlift (executed)");
 	setExecuted(true);
 	std::cout << *this << std::endl;
+	Notify(this);
 }
 
 Order* Airlift::clone() const // Virtual constructor
 {
+	Notify(this);
 	return new Airlift(*this);
 }
 
@@ -500,6 +525,7 @@ Negotiate& Negotiate::operator=(const Negotiate& other) // Assignment operator
 		issuer = other.issuer;
 		targetPlayer = other.targetPlayer;
 	}
+	Notify(this);
 	return *this;
 }
 
@@ -516,6 +542,7 @@ void Negotiate::execute() // Executes the Negotiate order
 	{
 		setEffect("Negotiate order execution failed: Invalid order.");
 		cout << *this << endl;
+		Notify(this);
 		return;
 	}
 	setEffect("negotiated temporary peace with " + targetPlayer->getName());
@@ -525,6 +552,7 @@ void Negotiate::execute() // Executes the Negotiate order
 
 Order* Negotiate::clone() const // Virtual constructor
 {
+	Notify(this);
 	return new Negotiate(*this);
 }
 
@@ -555,6 +583,7 @@ OrdersList& OrdersList::operator=(const OrdersList& other) // Assignment operato
 		clear();
 		deepCopy(other);
 	}
+	Notify(this);
 	return *this;
 }
 
@@ -682,4 +711,8 @@ std::ostream& operator<<(std::ostream& os, const OrdersList& ordersList) // Stre
 		os << i + 1 << ". " << ordersList.at(i) << "\n";
 	}
 	return os;
+}
+
+std::string Order::stringToLog() const {   
+    return "Order executed: " + name + " | Effect: " + effect;
 }
