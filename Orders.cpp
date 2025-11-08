@@ -1,14 +1,4 @@
-/**
- * @file Orders.cpp
- * @brief Orders implementations with observer integration (Notify + stringToLog).
- *
- * This file is based on your original Orders.cpp implementation. It adds:
- *  - inclusion of LoggingObserver.h
- *  - stringToLog() for Order and OrdersList
- *  - Notify(this) calls after order execution and after list modifications
- *
- * Replace your existing Orders.cpp with this content.
- */
+
 
 #include "Orders.h"
 #include "LoggingObserver.h"   
