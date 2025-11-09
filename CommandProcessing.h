@@ -99,6 +99,8 @@ class CommandProcessor : public Subject, public ILoggable  {
 
 	 	string stringToLog() const override;
 
+        string getStateString() const;
+
 };
 
 // FileCommandProcessorAdapter Class Definition

@@ -90,6 +90,7 @@ void GameEngine::transition(const string& command) {
 	}
 }
 
+//Run the startup phase of the game
 void GameEngine::startupPhase(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck) {
     commandProcessor->readCommand(); //Read in a command
 	Command* command = commandProcessor->getCommand(); //Get a command

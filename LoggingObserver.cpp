@@ -37,6 +37,7 @@ LogObserver::LogObserver() {
 
 LogObserver::~LogObserver() {
     if (logfile.is_open())
+        logfile << "--------------------------------------------------------------------------------------------------\n";
         logfile.close();
 }
 

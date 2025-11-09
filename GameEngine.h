@@ -17,7 +17,7 @@ class Deck;
 enum GameState;
 
 // Game Engine class
-class GameEngine public Subject, public ILoggable {
+class GameEngine : public Subject, public ILoggable {
     private:
         // pointer data member for Game States
         GameState* currentState;

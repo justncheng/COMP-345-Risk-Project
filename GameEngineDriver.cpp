@@ -63,7 +63,7 @@ void testStartupPhase()
 	gEngine.startupPhase(commandProcessor, map, players, deck);
 
     //Print the map
-    cout << *map << "\n\n";
+    cout << "\nCurrent map: " << *map << "\n\n";
 
     //Print the order of play
     cout << "Order of play:\n";
@@ -74,13 +74,13 @@ void testStartupPhase()
 
     //Print all player's information
 
-	cout << "\nArmies, Hands, and Territories of players:\n\n";
+	cout << "\nArmies, Hands, and Territories of players:\n";
 
     for (int i = 0; i < players->size(); i++) {
-        cout << *players->at(i) << "\n";
+        cout << *players->at(i);
     }
 
-	cout << "\n=== Startup Phase Testing Complete ===\n\n";
+	cout << "\n=== Startup Phase Testing Complete ===\n";
 
 	//Delete allocated memory
 

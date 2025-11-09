@@ -1,4 +1,4 @@
-# include "CommandProcessing.h";
+#include "CommandProcessing.h";
 #include "GameEngine.h"
 
 // Command Class Implementation:
@@ -34,7 +34,7 @@
 
     // Stream Insertion Operator
     ostream& operator<<(ostream& os, const Command& cmd) {
-        os << "Command: " << *(cmd.command) << "Effect: " << *(cmd.effect);
+        os << "Command: " << *(cmd.command) << ", Effect: " << *(cmd.effect);
         return os;
     }
 
@@ -55,6 +55,10 @@
     void Command::saveEffect(const string& newEffect) {
         *effect = newEffect;
 		Notify(this);
+    }
+
+    string Command::stringToLog() const {
+        return "Command: " + *command + ", Effect: " + *effect;
     }
 
 
@@ -108,7 +112,7 @@
 
     // Stream Insertion operator
     ostream& operator<<(ostream& os, const CommandProcessor& cp) {
-        os << "CommandProcessor [" << cp.commands->size() << "commands], State: " << *(cp.currentState);
+        os << "CommandProcessor [" << cp.commands->size() << " commands], State: " << cp.getStateString();
         // List all commands
         for (auto cmd: *(cp.commands)) {
             os << "\n - " << *cmd;
@@ -259,6 +263,25 @@
 
 		Notify(this);
         return isValid;
+    }
+
+    string CommandProcessor::stringToLog() const {
+        return "CommandProcessor [" + to_string(commands->size()) + " commands], State: " + getStateString();
+    }
+
+    string CommandProcessor::getStateString() const {
+        switch (*currentState) {
+            case Start: return "Start";
+            case MapLoaded: return "MapLoaded";
+            case MapValidated: return "MapValidated";
+            case PlayersAdded: return "PlayersAdded";
+            case AssignReinforcements: return "AssignReinforcements";
+            case IssueOrders: return "IssueOrders";
+            case ExecuteOrders: return "ExecuteOrders";
+            case Win: return "Win";
+            case End: return "End";
+            default: return "Unknown State";
+        }
     }
 
 // FileCommandProcessorAdapter Class Implementation

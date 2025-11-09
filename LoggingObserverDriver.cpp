@@ -18,7 +18,7 @@ using namespace std;
  * @brief Test function for the Game Log Observer system.
  */
 void testLoggingObserver() {
-    cout << "=== Testing Game Log Observer Integration ===\n\n";
+    cout << "=== Testing Game Log Observer ===\n\n";
 
     LogObserver logger;
 
@@ -26,14 +26,14 @@ void testLoggingObserver() {
     CommandProcessor cp;
     cp.Attach(&logger);
 
-    Command* cmd = new Command("loadmap world.map");
+    Command* cmd = new Command("loadmap world.map", " ");
     cmd->Attach(&logger);
 
     OrdersList orders;
     orders.Attach(&logger);
 
-    Order order; // or a concrete subclass like Deploy
-    order.Attach(&logger);
+    Order* order = new Deploy();
+    order->Attach(&logger);
 
     GameEngine engine;
     engine.Attach(&logger);
@@ -41,14 +41,14 @@ void testLoggingObserver() {
     // Trigger loggable actions
     cp.saveCommand(cmd);
     cmd->saveEffect("Map successfully loaded.");
-    orders.addOrder(&order);
-    order.execute();
+    orders.add(order);
+    order->execute();
     engine.transition("assignreinforcement");
 
-    cout << "Log entries written to gamelog.txt.\n";
-    cout << "=== End of LoggingObserver Test ===\n\n";
+    cout << "Log entries written to gamelog.txt.\n\n";
+    cout << "=== Game Log Observer Testing Complete ===\n\n";
 
-    delete cmd;
+    delete order;
 }
 
 

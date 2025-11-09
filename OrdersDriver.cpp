@@ -72,11 +72,11 @@ void testOrdersLists() {
 
 
 void testOrderExecution() {
-    cout << "\n=== testOrderExecution ===\n\n";
+    cout << "\n=== Testing Order Execution ===\n\n";
 
     // --- Setup players and territories ---
-    Player* player1 = new Player();
-    Player* player2 = new Player();
+    Player* player1 = new Player("Player 1");
+    Player* player2 = new Player("Player 2");
 
     Territory* A1 = new Territory("A1", 0, 0, "ContinentA");
     Territory* A2 = new Territory("A2", 1, 0, "ContinentA");
@@ -182,5 +182,5 @@ void testOrderExecution() {
     delete A2;
     delete B1;
 
-    cout << "\n=== End of testOrderExecution ===\n\n";
+    cout << "\n=== Testing Order Execution Complete ===\n\n";
 }

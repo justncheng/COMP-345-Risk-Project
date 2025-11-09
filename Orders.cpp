@@ -67,7 +67,6 @@ std::ostream& operator<<(std::ostream& os, const Order& order) // Stream inserti
     return os;
 };
 
-
 std::string Order::stringToLog() const {
     return "Order: " + name + " | Executed: " + (executed ? "Yes" : "No") + " | Effect: " + effect;
 }

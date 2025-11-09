@@ -3,8 +3,7 @@
 #include "OrdersDriver.h"
 #include "CardsDriver.h"
 #include "GameEngineDriver.h"
-
-void testLoggingObserver();
+#include "LoggingObserverDriver.h"
 
 int main() 
 {
