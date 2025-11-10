@@ -10,5 +10,6 @@ int main()
     testStartupPhase();
     testOrderExecution();
     testLoggingObserver();
+	testMainGameLoop();
     return 0;
 }

@@ -32,8 +32,13 @@ class GameEngine : public Subject, public ILoggable {
         ~GameEngine();
         // function to transition between states
         void transition(const string& command);
+
 		// function to handle the startup phase
         void startupPhase(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck);
+		// function to handle the main game loop
+        void mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck);
+		// function to distribute reinforcements to players
+        void reinforcementPhase(Map*& map, vector<Player*>*& players);
 
 		 string stringToLog() const override;
 			

@@ -5,12 +5,13 @@ void testLoadMaps() {
     std::cout << "=== Testing Map Loading and Validation ===\n";
     
     // Test with valid map files
+
     std::vector<std::string> testFiles = {
         "Chicago.map",
-        "england.map", 
+        "England.map", 
         "Florida.map"
     };
-    
+ 
     for (const std::string& filename : testFiles) {
         std::cout << "\n--- Testing: " << filename << " ---" << std::endl;
         

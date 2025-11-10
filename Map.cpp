@@ -262,7 +262,7 @@ bool Map::isConnectedGraph() {
     
     std::vector<bool> visited(territories.size(), false);
     dfs(territories[0], visited);
-    
+
     for (bool v : visited) {
         if (!v) return false;
     }
@@ -423,7 +423,7 @@ Map* MapLoader::loadMap(const std::string& filename) {
     while (std::getline(file, line)) {
         if (line.empty() || line[0] == ';') continue;
         
-        if (line == "[Territories]") {
+        if (caseInsenstiveEquals(line, "[Territories]")) {
             inTerritoriesSection = true;
             continue;
         } else if (line[0] == '[') {

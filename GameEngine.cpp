@@ -223,6 +223,37 @@ void GameEngine::startupPhase(CommandProcessor*& commandProcessor, Map*& map, ve
 	}
 }
 
+//Run the main game loop
+void GameEngine::mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck) {
+	reinforcementPhase(map, players); //Distribute reinforcements to players
+}
+
+//Distribute reinforcements to players
+void GameEngine::reinforcementPhase(Map*& map, vector<Player*>*& players) {
+	for (Player* player : *players) { //Iterate through all players
+        int armiesToAdd = static_cast<int>(player->getTerritories().size() / 3); //Calculate armies to add based on territories owned
+
+		for (Continent* continent : map->getContinents()) { //Iterate through all continents
+			bool ownsEntireContinent = true;
+
+			for (Territory* territory : continent->getTerritories()) { //Iterate through all territories in the continent
+				if (territory->getOwner() != player) { //Check if the player owns the territory
+					ownsEntireContinent = false;
+                    break;
+                }
+			}
+
+            if (ownsEntireContinent) {
+				armiesToAdd += continent->getBonus(); //Add continent bonus if player owns entire continent
+            }
+        }
+
+		armiesToAdd = max(armiesToAdd, 3); //Ensure minimum of 3 armies are added
+
+		player->setArmies(player->getArmies() + armiesToAdd); //Add armies to player
+	}
+}
+
 string GameEngine::getStateString() const {
     switch(*currentState) {
         case Start: return "Start";
