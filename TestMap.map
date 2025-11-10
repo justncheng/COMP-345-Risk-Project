@@ -1,0 +1,38 @@
+[Continents]
+Continent A=4
+Continent B=4
+Continent C=4
+Continent D=4
+Continent E=4
+Continent F=4
+
+[Territories]
+Territory 1A,0,0,Continent A,Territory 2A,Territory 3A
+Territory 2A,50,0,Continent A,Territory 1A,Territory 4A
+Territory 3A,0,50,Continent A,Territory 1A,Territory 4A
+Territory 4A,50,50,Continent A,Territory 2A,Territory 3A,Territory 3B,Territory 2C
+
+Territory 1B,100,0,Continent B,Territory 2B,Territory 3B
+Territory 2B,150,0,Continent B,Territory 1B,Territory 4B
+Territory 3B,100,50,Continent B,Territory 1B,Territory 4B,Territory 4A,Territory 1D
+Territory 4B,150,50,Continent B,Territory 2B,Territory 3B
+
+Territory 1C,0,100,Continent C,Territory 2C,Territory 3C
+Territory 2C,50,100,Continent C,Territory 1C,Territory 4C,Territory 4A,Territory 1D
+Territory 3C,0,150,Continent C,Territory 1C,Territory 4C
+Territory 4C,50,150,Continent C,Territory 2C,Territory 3C,Territory 3D, Territory 2E
+
+Territory 1D,100,100,Continent D,Territory 2D,Territory 3D,Territory 3B,Territory 2C
+Territory 2D,150,100,Continent D,Territory 1D,Territory 4D
+Territory 3D,100,150,Continent D,Territory 1D,Territory 4D,Territory 4C,Territory 1F
+Territory 4D,150,150,Continent D,Territory 2D,Territory 3D
+
+Territory 1E,0,200,Continent E,Territory 2E,Territory 3E
+Territory 2E,50,200,Continent E,Territory 1E,Territory 4E,Territory 4C,Territory 1F
+Territory 3E,0,250,Continent E,Territory 1E,Territory 4E
+Territory 4E,50,250,Continent E,Territory 2E,Territory 3E
+
+Territory 1F,100,200,Continent F,Territory 2F,Territory 3F,Territory 3D,Territory 2E
+Territory 2F,150,200,Continent F,Territory 1F,Territory 4F
+Territory 3F,100,250,Continent F,Territory 1F,Territory 4F
+Territory 4F,150,250,Continent F,Territory 2F,Territory 3F
