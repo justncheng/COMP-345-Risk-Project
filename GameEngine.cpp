@@ -232,6 +232,7 @@ void GameEngine::mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, ve
     while (!gameover) {
         reinforcementPhase(map, players); //Distribute reinforcements to players
         issueOrdersPhase(players); //Players issue orders
+		executeOrdersPhase(players); //Execute orders issued by players
 
         for (int i = 0; i < players->size(); i++) {
             if (players->at(i)->getTerritories().size() == 0) {

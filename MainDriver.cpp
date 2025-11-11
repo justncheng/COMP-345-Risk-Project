@@ -10,8 +10,8 @@ int main(int argc, char* argv[])
 {
     testCommandProcessor(argc, argv);
     testStartupPhase();
+    testMainGameLoop();
     testOrderExecution();
     testLoggingObserver();
-	testMainGameLoop();
     return 0;
 }
