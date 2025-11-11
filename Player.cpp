@@ -175,7 +175,7 @@ bool Player::issueOrder()
     list<Territory> defendList = toDefend();
     list<Territory> attackList = toAttack();
 
-    // isuue advance orders to defend own territories
+    // issue advance orders to defend own territories
     if(!defendList.empty()) {
         Territory* source = &defendList.front();
         Territory* target = nullptr;
@@ -190,10 +190,13 @@ bool Player::issueOrder()
 
         if(target != nullptr) {
             int sourceArmies = source->getArmies();   // get armies in source territory
-            int numArmies = (sourceArmies > 1) ? (sourceArmies - 1) : 0; // keeping 1 army behind
-            Order* advanceOrder = new Advance(this, source, target, numArmies);
-            issueOrder(advanceOrder);    // issuing advancde order
-            return true;
+
+            if (sourceArmies > 1) {
+                int numArmies = (sourceArmies > 1) ? (sourceArmies - 1) : 0; // keeping 1 army behind
+                Order* advanceOrder = new Advance(this, source, target, numArmies);
+                issueOrder(advanceOrder);    // issuing advancde order
+                return true;
+            }
         }
     }
 
@@ -202,15 +205,18 @@ bool Player::issueOrder()
         Territory* source = &defendList.front();
         Territory* enemyTarget = &attackList.front();
         int sourceArmies = source->getArmies();
-        int numArmies = (sourceArmies > 1) ? (sourceArmies - 1) : 0; 
 
-        Order* attackOrder = new Advance(this, source, enemyTarget, numArmies);
-        issueOrder(attackOrder);   // issuing advance order to attack
-        return true;
+        if (sourceArmies > 1) {
+            int numArmies = (sourceArmies > 1) ? (sourceArmies - 1) : 0;
+
+            Order* attackOrder = new Advance(this, source, enemyTarget, numArmies);
+            issueOrder(attackOrder);   // issuing advance order to attack
+            return true;
+        }
     }
 
     // Issue card-based orders here if any cards exist in hand (already implemented in Cards.cpp)
-    
+
     return false;
 }
 

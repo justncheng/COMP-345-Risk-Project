@@ -293,10 +293,10 @@ void GameEngine::executeOrdersPhase(vector<Player*>*& players) {
         ordersRemaining = false;   // Continue until no deploy orders are found in a full pass
         for (auto player : *players) {
             OrdersList* ordersList = player->getOrdersList();  // Get the player's orders list
-            for (int i = 0; i < ordersList->size(); ++i) {
+            for (int i = 0; i < ordersList->size(); i++) {
                 Order* order = ordersList->getOrders() [i];  // Get the order at index i
                 // Check if it's a deploy order, execute and remove it
-                if (order->getName() == "deploy") {
+                if (order->getName() == "Deploy") {
                     if (order->validate()) order->execute();  // Execute the order if valid
                     else order->setExecuted(false);     // Mark as not executed if invalid
                     delete order;
@@ -316,7 +316,7 @@ void GameEngine::executeOrdersPhase(vector<Player*>*& players) {
             OrdersList* ordersList = player->getOrdersList();
             if (ordersList->size() > 0) {
                 Order* order = ordersList->getOrders()[0];  // Get the first order
-                if (order->getName() != "deploy") {
+                if (order->getName() != "Deploy") {
                     if (order->validate()) order->execute();
                     else order->setExecuted(false);
                     delete order;
