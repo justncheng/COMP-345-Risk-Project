@@ -289,19 +289,19 @@ void GameEngine::executeOrdersPhase(vector<Player*>*& players) {
 
     // Step 1: Execute all deploy orders for all players
     while (ordersRemaining) {
-        ordersRemaining = false;
+        ordersRemaining = false;   // Continue until no deploy orders are found in a full pass
         for (auto player : *players) {
-            OrdersList* ordersList = player->getOrdersList();
+            OrdersList* ordersList = player->getOrdersList();  // Get the player's orders list
             for (int i = 0; i < ordersList->size(); ++i) {
-                Order* order = ordersList->getOrders() [i];
+                Order* order = ordersList->getOrders() [i];  // Get the order at index i
                 // Check if it's a deploy order, execute and remove it
                 if (order->getName() == "deploy") {
-                    if (order->validate()) order->execute();
-                    else order->setExecuted(false);
+                    if (order->validate()) order->execute();  // Execute the order if valid
+                    else order->setExecuted(false);     // Mark as not executed if invalid
                     delete order;
-                    ordersList->remove(i);
+                    ordersList->remove(i);      // Remove the order from the list
                     ordersRemaining = true;
-                    --i; // Compensate for remove
+                    --i;          // Compensate for remove
                 }
             }
         }
@@ -309,9 +309,9 @@ void GameEngine::executeOrdersPhase(vector<Player*>*& players) {
 
     // Step 2: Execute all remaining orders in round-robin fashion
     ordersRemaining = true;
-    while (ordersRemaining) {
+    while (ordersRemaining) {    /// Continue until no orders remain
         ordersRemaining = false;
-        for (auto player : *players) {
+        for (auto player : *players) {   // Iterate through each player
             OrdersList* ordersList = player->getOrdersList();
             if (ordersList->size() > 0) {
                 Order* order = ordersList->getOrders()[0];  // Get the first order
