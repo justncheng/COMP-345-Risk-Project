@@ -2,6 +2,7 @@
 #include "CommandProcessing.h"
 #include "Player.h"
 #include "Map.h"
+#include <memory>
 using namespace std;
 
 void testGameStates() {

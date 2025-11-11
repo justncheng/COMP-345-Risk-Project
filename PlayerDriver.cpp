@@ -49,8 +49,8 @@ void testPlayers() //Free function that tests the Player class's functionality
 
     cout << "OrdersList before issueOrder(): " << *(player1->getOrdersList()); //Prints the before issueOrder() orders list for comparison
     
-	Deploy d(player1, nullptr, 5); //Creates a Deploy order
-    player1->issueOrder(d); //Tests the issueOrder() method
+	//  Deploy d(player1, nullptr, 5); //Creates a Deploy order
+    player1->issueOrder(new Deploy(player1, nullptr, 5)); //Tests the issueOrder() method
 
     cout << "OrdersList after issueOrder(): " << *(player1->getOrdersList()) << "\n"; //Prints the after issueOrder() orders list for comparison
 

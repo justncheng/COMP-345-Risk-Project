@@ -3,7 +3,9 @@
 #include <string>
 #include <iostream>
 #include <cstdlib>
+#include <cmath>
 #include <vector>
+#include "CommandProcessing.h"
 #include "LoggingObserver.h" 
 using namespace std;
 
@@ -14,7 +16,7 @@ class Map;
 class Deck;
 
 // Finite State Enum
-enum GameState;
+// enum GameState;
 
 // Game Engine class
 class GameEngine : public Subject, public ILoggable {

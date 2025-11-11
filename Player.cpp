@@ -143,7 +143,7 @@ list<Territory> Player::toAttack()
     return {Territory("TerritoryA", 10, 30, "ContinentB"), Territory("TerritoryB", 30, 20, "ContinentB"), Territory("TerritoryC", 40, 50, "ContinentB")}; //Returns arbitrary list of territories
 }
 
-void Player::issueOrder(Order& order)
+void Player::issueOrder(Order* order)
 {
     ordersList->add(order); //Adds the order to the orders list
 }

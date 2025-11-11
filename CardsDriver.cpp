@@ -1,4 +1,4 @@
-#pragma once
+
 #include "Cards.h"
 #include "Map.h"
 #include "Player.h"

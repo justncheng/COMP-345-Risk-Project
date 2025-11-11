@@ -2,6 +2,9 @@
 #include "CommandProcessing.h"
 #include "Map.h"
 #include "Player.h"
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
 
 // default constructor
 GameEngine::GameEngine() {

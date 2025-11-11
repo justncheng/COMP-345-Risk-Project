@@ -1,4 +1,4 @@
-#include "CommandProcessing.h";
+#include "CommandProcessing.h"
 #include "GameEngine.h"
 
 // Command Class Implementation:

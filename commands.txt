@@ -1,0 +1,12 @@
+loadmap England.map
+validatemap
+addplayer Jasdeep
+addplayer Justin
+gamestart
+replay
+loadmap Florida.map
+validatemap
+addplayer Marissa
+addplayer Alex
+gamestart
+quit

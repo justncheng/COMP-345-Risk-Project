@@ -38,23 +38,24 @@ void Card::play(Player* player, Deck* deck, Hand* hand, const CardPlayContext& c
 
     switch (type) {
     case CardType::Bomb:
-		player->issueOrder(Bomb(player, context.target));
+		player->issueOrder(new Bomb(player, context.target));
+        // player->issueOrder(new Bomb(player, context.target));
         cout << "Bomb";
         break;
     case CardType::Reinforcement:
-        player->issueOrder(Deploy(player, context.target, context.armies));
+        player->issueOrder( new Deploy(player, context.target, context.armies));
         cout << "Reinforcement";
         break;
     case CardType::Blockade:
-		player->issueOrder(Blockade(player, context.target));
+		player->issueOrder(new Blockade(player, context.target));
         cout << "Blockade";
         break;
     case CardType::Airlift:
-		player->issueOrder(Airlift(player, context.source, context.target, context.armies));
+		player->issueOrder(new Airlift(player, context.source, context.target, context.armies));
 		cout << "Airlift";
         break;
     case CardType::Diplomacy:
-		player->issueOrder(Negotiate(player, context.targetPlayer));
+		player->issueOrder(new Negotiate(player, context.targetPlayer));
 		cout << "Diplomacy";
         break;
 	default:
