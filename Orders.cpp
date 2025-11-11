@@ -71,6 +71,10 @@ std::string Order::stringToLog() const {
     return "Order: " + name + " | Executed: " + (executed ? "Yes" : "No") + " | Effect: " + effect;
 }
 
+string Order::getName() const {
+    return name;
+}
+
 // Deploy Class Implementation ---------------------------------------------------------------------
 
 Deploy::Deploy() : Order("Deploy"), issuer(nullptr), target(nullptr), armies(0) {} // Default constructor

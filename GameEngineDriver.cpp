@@ -195,7 +195,7 @@ void testMainGameLoop() {
     gEngine.issueOrdersPhase(players);   
 
 	//Order Execution Phase Testing
-	//gEngine.executeOrdersPhase(); UNCOMMENT WHEN IMPLEMENTED
+	gEngine.executeOrdersPhase(players); 
 
 	//Testing the main game loop
 	gEngine.mainGameLoop(commandProcessor, map, players, deck);

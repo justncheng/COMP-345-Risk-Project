@@ -19,7 +19,7 @@ class Deck;
 // enum GameState;
 
 // Game Engine class
-class GameEngine : public Subject, public ILoggable {
+class GameEngine : public Subject, public ILoggable{
     private:
         // pointer data member for Game States
         GameState* currentState;
@@ -43,6 +43,8 @@ class GameEngine : public Subject, public ILoggable {
         void reinforcementPhase(Map*& map, vector<Player*>*& players);
         // function to issue orders to players
         void issueOrdersPhase(vector<Player*>*& players);
+        // function to execute orders 
+        void executeOrdersPhase(vector<Player*>*& players);
 
 		 string stringToLog() const override;
 			

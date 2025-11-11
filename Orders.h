@@ -42,13 +42,16 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Order& order); // Stream insertion operator
 
+    void setExecuted(bool executed); // Set executed status
    
     std::string stringToLog() const override;
+
+    string getName() const;
 
 protected:
     void setEffect(const std::string& effect); // Set the effect description of the order
     void setName(const std::string& name); // Set the name of the order
-    void setExecuted(bool executed); // Set executed status
+    
 
 private:
     std::string name;
@@ -235,11 +238,13 @@ public:
    
     std::string stringToLog() const override;
 
+    std::vector<Order*>& getOrders() { return orders; }
+    const std::vector<Order*>& getOrders() const { return orders; }
+
 private:
     void clear(); // Clear all orders from the list
     void deepCopy(const OrdersList& other); // Deep copy from another OrdersList
 
-private:
     // Class members
     std::vector<Order*> orders{}; // Vector of pointers to orders
 };
