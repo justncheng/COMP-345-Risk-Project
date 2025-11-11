@@ -4,9 +4,11 @@
 #include "CardsDriver.h"
 #include "GameEngineDriver.h"
 #include "LoggingObserverDriver.h"
+#include "CommandProcessingDriver.h"
 
-int main() 
+int main(int argc, char* argv[]) 
 {
+    testCommandProcessor(argc, argv);
     testStartupPhase();
     testOrderExecution();
     testLoggingObserver();

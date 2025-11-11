@@ -2,13 +2,6 @@
 #include <string>
 using namespace std;
 
-void testCommandProcessor(int argc, char* argv[]);
-
-int main(int argc, char* argv[]) {
-    testCommandProcessor(argc, argv);
-    return 0;
-
-}
 
 void testCommandProcessor(int argc, char* argv[]) {
     CommandProcessor* processor;
@@ -25,9 +18,9 @@ void testCommandProcessor(int argc, char* argv[]) {
         return;
     }
 
-    // read and process commands
-    // This only runs for the externam game commands and doesn't show any effect as of now because
-    // other Game state cases are not implemented.
+    // Read and process commands
+    // This only runs for the external game commands and doesn't show any effect for internal game commands 
+    // as of now because internal Game state cases are implemented in GameEngine class.
     bool continueLoop = true;
     while(continueLoop) {
         processor->readCommand();
