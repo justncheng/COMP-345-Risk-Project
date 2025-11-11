@@ -21,17 +21,22 @@ void testCommandProcessor(int argc, char* argv[]) {
     // Read and process commands
     // This only runs for the external game commands and doesn't show any effect for internal game commands 
     // as of now because internal Game state cases are implemented in GameEngine class.
+
     bool continueLoop = true;
     while(continueLoop) {
         processor->readCommand();
         Command* cmd = processor->getCommand();
 
         processor->validate(cmd);
-        cout << *cmd << endl;
+        cout << *cmd << "\n\n";
+
+        if (processor->getCurrentState() == AssignReinforcements) {
+            processor->setCurrentState(Win);
+        }
 
         if(processor->getCurrentState() == End) {
             continueLoop = false;
-        } 
+        }
     }
     delete processor;
 

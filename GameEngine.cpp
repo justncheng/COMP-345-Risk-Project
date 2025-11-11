@@ -228,7 +228,23 @@ void GameEngine::startupPhase(CommandProcessor*& commandProcessor, Map*& map, ve
 
 //Run the main game loop
 void GameEngine::mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck) {
-	reinforcementPhase(map, players); //Distribute reinforcements to players
+    bool gameover = false;
+    while (!gameover) {
+        reinforcementPhase(map, players); //Distribute reinforcements to players
+        issueOrdersPhase(players); //Players issue orders
+
+        for (int i = 0; i < players->size(); i++) {
+            if (players->at(i)->getTerritories().size() == 0) {
+                players->erase(players->begin() + i);
+                i--;
+            }
+        }
+
+        if (players->size() == 1) {
+            cout << players->at(0)->getName() << " is the winner!\n\n";
+            gameover = true;
+        }
+    }
 }
 
 //Distribute reinforcements to players
