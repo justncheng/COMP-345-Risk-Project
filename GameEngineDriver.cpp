@@ -192,7 +192,7 @@ void testMainGameLoop() {
     }
 
     //Order Issuing Phase Testing
-    //gEngine.issueOrdersPhase();   UNCOMMENT WHEN IMPLEMENTED
+    gEngine.issueOrdersPhase(players);   
 
 	//Order Execution Phase Testing
 	//gEngine.executeOrdersPhase(); UNCOMMENT WHEN IMPLEMENTED

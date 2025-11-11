@@ -39,7 +39,6 @@ void Card::play(Player* player, Deck* deck, Hand* hand, const CardPlayContext& c
     switch (type) {
     case CardType::Bomb:
 		player->issueOrder(new Bomb(player, context.target));
-        // player->issueOrder(new Bomb(player, context.target));
         cout << "Bomb";
         break;
     case CardType::Reinforcement:

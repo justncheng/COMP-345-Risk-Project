@@ -148,6 +148,71 @@ void Player::issueOrder(Order* order)
     ordersList->add(order); //Adds the order to the orders list
 }
 
+void Player::issueOrder()
+{
+    // deploy phase and if player hasarmies, issue deploy orders first
+    while(armies > 0) {     // while loop to deploy all armies
+        list<Territory> defendList = toDefend(); // get territories to defend
+        Territory* deployTerritory = nullptr;
+
+        if(!defendList.empty()) {
+            deployTerritory = &defendList.front(); // choose first territory to defend for deployment
+        }
+        else if (!territories.empty()) {
+            deployTerritory = territories.front(); // if no territories to defend, deploy to any owned territory    
+        }
+
+        if(deployTerritory != nullptr) {
+            int armiesToDeploy = armies; // deploy all remaining armies
+            Order* deployOrder = new Deploy(this, deployTerritory, armiesToDeploy);
+            issueOrder(deployOrder);  // issue deploy order
+            armies = 0;  // all armies deployed
+            return;
+        }
+    }
+
+    // after deployment, issue advance orders to defeend own territories or attack enemy territories
+    list<Territory> defendList = toDefend();
+    list<Territory> attackList = toAttack();
+
+    // isuue advance orders to defend own territories
+    if(!defendList.empty()) {
+        Territory* source = &defendList.front();
+        Territory* target = nullptr;
+
+        // find another own territory to move armies to defend
+        for (auto& territory : territories) {   // iterate through owned territories
+            if(territory != source) {
+                target = territory;             // choose first different territory as target
+                break;
+            }
+        }
+
+        if(target != nullptr) {
+            int sourceArmies = source->getArmies();   // get armies in source territory
+            int numArmies = (sourceArmies > 1) ? (sourceArmies - 1) : 0; // keeping 1 army behind
+            Order* advanceOrder = new Advance(this, source, target, numArmies);
+            issueOrder(advanceOrder);    // issuing advancde order
+            return;
+        }
+    }
+
+    // issue advance orders to attack enemy territories from own territories
+    if(!attackList.empty() && !defendList.empty()) {
+        Territory* source = &defendList.front();
+        Territory* enemyTarget = &attackList.front();
+        int sourceArmies = source->getArmies();
+        int numArmies = (sourceArmies > 1) ? (sourceArmies - 1) : 0; 
+
+        Order* attackOrder = new Advance(this, source, enemyTarget, numArmies);
+        issueOrder(attackOrder);   // issuing advance order to attack
+        return;
+    }
+
+    // Issue card-based orders here if any cards exist in hand (already implemented in Cards.cpp)
+    
+}
+
 void Player::addTerritory(Territory* territory)
 {
 	territories.push_back(territory); //Adds the territory to the player's list of territories
