@@ -148,7 +148,7 @@ void Player::issueOrder(Order* order)
     ordersList->add(order); //Adds the order to the orders list
 }
 
-void Player::issueOrder()
+bool Player::issueOrder()
 {
     // deploy phase and if player hasarmies, issue deploy orders first
     while(armies > 0) {     // while loop to deploy all armies
@@ -167,7 +167,7 @@ void Player::issueOrder()
             Order* deployOrder = new Deploy(this, deployTerritory, armiesToDeploy);
             issueOrder(deployOrder);  // issue deploy order
             armies = 0;  // all armies deployed
-            return;
+            return true;
         }
     }
 
@@ -193,7 +193,7 @@ void Player::issueOrder()
             int numArmies = (sourceArmies > 1) ? (sourceArmies - 1) : 0; // keeping 1 army behind
             Order* advanceOrder = new Advance(this, source, target, numArmies);
             issueOrder(advanceOrder);    // issuing advancde order
-            return;
+            return true;
         }
     }
 
@@ -206,12 +206,14 @@ void Player::issueOrder()
 
         Order* attackOrder = new Advance(this, source, enemyTarget, numArmies);
         issueOrder(attackOrder);   // issuing advance order to attack
-        return;
+        return true;
     }
 
     // Issue card-based orders here if any cards exist in hand (already implemented in Cards.cpp)
     
+    return false;
 }
+
 
 void Player::addTerritory(Territory* territory)
 {

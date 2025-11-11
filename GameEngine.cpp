@@ -262,13 +262,12 @@ void GameEngine::issueOrdersPhase(vector<Player*>*& players) {
     while (ordersIssued) {   // Continue until no orders are issued in a full pass
         ordersIssued = false;
         for (Player* player : *players) {
-            if (player->hasOrdersToIssue()) {
-                player->issueOrder(); // Issues one order this pass
+            if (player->issueOrder()) // Issues one order this pass
                 ordersIssued = true;  // At least one order was issued this pass
-            }
         }
     }
 }
+
 
 string GameEngine::getStateString() const {
     switch(*currentState) {

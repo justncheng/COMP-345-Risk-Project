@@ -9,7 +9,7 @@
       "stopAtEntry": false,
       "externalConsole": true,
       "cwd": "c:/Users/jazz0/Desktop/Fall 25/COMP 345/Project/COMP-345-Risk-Project",
-      "program": "c:/Users/jazz0/Desktop/Fall 25/COMP 345/Project/COMP-345-Risk-Project/build/Debug/outDebug",
+      "program": "c:/Users/jazz0/Desktop/Fall 25/COMP 345/Project/COMP-345-Risk-Project/.vscode/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

@@ -28,10 +28,8 @@ class Player //Player class represents a player playing the game
 
         list<Territory> toDefend(); //Returns list of territories to defend
         list<Territory> toAttack(); //Returns list of territories to attack
-        bool hasOrdersToIssue();
-        void issueOrder();
-        // bool executeDeployOrder();
-        // bool executeNonDeployOrder();
+        // bool hasOrdersToIssue();
+        bool issueOrder();
         void issueOrder(Order* order); //Issues an order
 
 		void addTerritory(Territory* territory); //Adds a territory to the player's list of territories
