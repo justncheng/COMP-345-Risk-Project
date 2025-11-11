@@ -268,6 +268,50 @@ void GameEngine::issueOrdersPhase(vector<Player*>*& players) {
     }
 }
 
+void GameEngine::executeOrdersPhase(vector<Player*>*& players) {
+    bool ordersRemaining = true;
+
+    // Step 1: Execute all deploy orders for all players
+    while (ordersRemaining) {
+        ordersRemaining = false;
+        for (auto player : *players) {
+            OrdersList* ordersList = player->getOrdersList();
+            for (int i = 0; i < ordersList->size(); ++i) {
+                Order* order = ordersList->getOrders() [i];
+                // Check if it's a deploy order, execute and remove it
+                if (order->getName() == "deploy") {
+                    if (order->validate()) order->execute();
+                    else order->setExecuted(false);
+                    delete order;
+                    ordersList->remove(i);
+                    ordersRemaining = true;
+                    --i; // Compensate for remove
+                }
+            }
+        }
+    }
+
+    // Step 2: Execute all remaining orders in round-robin fashion
+    ordersRemaining = true;
+    while (ordersRemaining) {
+        ordersRemaining = false;
+        for (auto player : *players) {
+            OrdersList* ordersList = player->getOrdersList();
+            if (ordersList->size() > 0) {
+                Order* order = ordersList->getOrders()[0];  // Get the first order
+                if (order->getName() != "deploy") {
+                    if (order->validate()) order->execute();
+                    else order->setExecuted(false);
+                    delete order;
+                    ordersList->remove(0);
+                    ordersRemaining = true;
+                }
+            }
+        }
+    }
+}
+
+
 
 string GameEngine::getStateString() const {
     switch(*currentState) {
