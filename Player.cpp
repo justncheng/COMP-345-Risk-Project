@@ -24,7 +24,7 @@ Player::Player(const Player& player) //Copy Constructor
     //Adds territories
     for(Territory* territory : player.territories)
     {
-        territories.push_back(new Territory(*territory));
+        territories.push_back(territory);
     }
 
     hand = new Hand(*player.hand); //Creates hand
@@ -33,12 +33,6 @@ Player::Player(const Player& player) //Copy Constructor
 
 Player::~Player() //Destructor
 {
-    //Deletes each territory
-    for(Territory* territory : territories)
-    {
-        delete territory;
-    }
-
     delete hand; //Deletes hand
     delete ordersList; //Deletes orders list
 }
@@ -51,18 +45,12 @@ Player& Player::operator = (const Player& player) //Assignment Operator Overload
     //Checks if the player is not equal to itself
     if (this != &player) 
     {
-        //Deletes exisiting territories
-        for(Territory* territory : territories) 
-        {
-            delete territory;
-        }
-
         territories.clear();
 
         //Adds new territories
         for(Territory* territory : player.territories)
         {
-            territories.push_back(new Territory(*territory));
+            territories.push_back(territory);
         }
 
         //Deletes hand and creates new hand
@@ -133,14 +121,128 @@ ostream& operator << (ostream &output, const Player &player) //Stream Insertion 
 
 //Functions
 
-list<Territory> Player::toDefend()
+list<Territory*> Player::toDefend()
 {
-    return {Territory("TerritoryA", 30, 50, "ContinentA"), Territory("TerritoryB", 20, 40, "ContinentA")}; //Returns arbitrary list of territories
+    srand(time(NULL));
+
+    int territoriesToDefend = rand() % 2 + 2;
+
+    if(territoriesToDefend > territories.size())
+    {
+        territoriesToDefend = territories.size();
+	}
+
+    list<Territory*> defendList;
+
+    while (territoriesToDefend > 0)
+    {
+		int territoryToDefendIndex = rand() % territories.size();
+
+        for(Territory* territory : territories)
+        {
+            if(territoryToDefendIndex == 0)
+            {
+				bool alreadyInList = false;
+
+                for(Territory* defendedTerritory : defendList)
+                {
+                    if(defendedTerritory == territory)
+                    {
+                        territoryToDefendIndex++;
+                        territoriesToDefend++;
+						alreadyInList = true;
+                        break;
+                    }
+				}
+
+                if (!alreadyInList)
+                {
+                    defendList.push_back(territory);
+                }
+
+                break;
+            }
+
+            territoryToDefendIndex--;
+		}
+
+        territoriesToDefend--;
+    }
+
+	return defendList;
 }
 
-list<Territory> Player::toAttack()
+list<Territory*> Player::toAttack()
 {
-    return {Territory("TerritoryA", 10, 30, "ContinentB"), Territory("TerritoryB", 30, 20, "ContinentB"), Territory("TerritoryC", 40, 50, "ContinentB")}; //Returns arbitrary list of territories
+    srand(time(NULL));
+
+    int territoriesToAttack = rand() % 2 + 2;
+
+    if (territoriesToAttack > territories.size())
+    {
+        territoriesToAttack = territories.size();
+    }
+
+    list<Territory*> attackList;
+
+    while (territoriesToAttack > 0)
+    {
+        int territoryNeighbourToAttackIndex = rand() % territories.size();
+
+        for (Territory* territory : territories)
+        {
+            if (territoryNeighbourToAttackIndex == 0)
+            {
+                bool invalid = false;
+
+                int territoryToAttackIndex = rand() % territory->getAdjacentTerritories().size();
+
+                for (Territory* toAttack : territory->getAdjacentTerritories())
+                {
+                    if (territoryToAttackIndex == 0)
+                    {
+                        invalid = false;
+
+                        if (toAttack->getOwner() == this)
+                        {
+                            invalid = true;
+                        }
+
+                        for (Territory* attackedTerritory : attackList)
+                        {
+                            if (attackedTerritory == toAttack)
+                            {
+                                territoryNeighbourToAttackIndex++;
+                                territoriesToAttack++;
+                                invalid = true;
+                                break;
+                            }
+                        }
+
+                        if (!invalid)
+                        {
+                            attackList.push_back(territory);
+                        }
+
+                        break;
+                    }
+
+                    territoryToAttackIndex--;
+                }
+
+                if (invalid)
+                {
+                    break;
+                }
+            }
+
+            territoryNeighbourToAttackIndex--;
+        }
+
+        territoriesToAttack--;
+    }
+
+    return attackList;
 }
 
 void Player::issueOrder(Order* order)
@@ -148,47 +250,68 @@ void Player::issueOrder(Order* order)
     ordersList->add(order); //Adds the order to the orders list
 }
 
-bool Player::issueOrder()
+bool Player::issueOrder(Deck* deck)
 {
     // deploy phase and if player has armies, issue deploy orders first
-    while(armies > 0) {     // while loop to deploy all armies
-        list<Territory> defendList = toDefend(); // get territories to defend
+    if (armies > 0)
+    {
+        list<Territory*> defendList = toDefend(); // get territories to defend
+		int amountToDefend = defendList.size();
+
+        if (defendList.empty())
+        {
+            return false;
+        }
+
         Territory* deployTerritory = nullptr;
 
-        if(!defendList.empty()) {
-            deployTerritory = &defendList.front(); // choose first territory to defend for deployment
-        }
-        else if (!territories.empty()) {
-            deployTerritory = territories.front(); // if no territories to defend, deploy to any owned territory    
-        }
+        while (!defendList.empty())
+        {
+            deployTerritory = defendList.front(); // choose first territory to defend for deployment
 
-        if(deployTerritory != nullptr) {
-            int armiesToDeploy = armies; // deploy all remaining armies
+	        int armiesToDeploy = armies / defendList.size(); // deploy armies evenly among territories to defend
             Order* deployOrder = new Deploy(this, deployTerritory, armiesToDeploy);
             issueOrder(deployOrder);  // issue deploy order
-            armies = 0;  // all armies deployed
-            return true;
+			armies -= armiesToDeploy; // reduce available armies
+
+			defendList.pop_front(); // remove deployed territory from list
         }
+
+        return true;
     }
 
-    // after deployment, issue advance orders to defeend own territories or attack enemy territories
-    list<Territory> defendList = toDefend();
-    list<Territory> attackList = toAttack();
+    // after deployment, issue advance orders to defend own territories or attack enemy territories
+    list<Territory*> defendList = toDefend();
+    list<Territory*> attackList = toAttack();
 
     // issue advance orders to defend own territories
-    if(!defendList.empty()) {
-        Territory* source = &defendList.front();
-        Territory* target = nullptr;
+    if (!defendList.empty()) {
+        Territory* source = nullptr;
+        Territory* target = defendList.front();
 
         // find another own territory to move armies to defend
         for (auto& territory : territories) {   // iterate through owned territories
-            if(territory != source) {
-                target = territory;             // choose first different territory as target
-                break;
+            if (territory != target && territory->getArmies() > 1) {
+                bool validSource = true;
+
+                for (Order* order : ordersList->getOrders()) {
+                    if (order->getName() == "Advance") {
+                        if(dynamic_cast<Advance*>(order)->getSource() == territory || dynamic_cast<Advance*>(order)->getTarget() == territory) {
+							validSource = false;
+                            break;
+						}
+					}
+                }
+
+                if (validSource)
+                {
+                    source = territory; // choose first different territory with more than one army as source
+                    break;
+                }
             }
         }
 
-        if(target != nullptr) {
+        if(source != nullptr) {
             int sourceArmies = source->getArmies();   // get armies in source territory
 
             if (sourceArmies > 1) {
@@ -202,8 +325,8 @@ bool Player::issueOrder()
 
     // issue advance orders to attack enemy territories from own territories
     if(!attackList.empty() && !defendList.empty()) {
-        Territory* source = &defendList.front();
-        Territory* enemyTarget = &attackList.front();
+        Territory* source = defendList.front();
+        Territory* enemyTarget = attackList.front();
         int sourceArmies = source->getArmies();
 
         if (sourceArmies > 1) {
@@ -215,7 +338,16 @@ bool Player::issueOrder()
         }
     }
 
-    // Issue card-based orders here if any cards exist in hand (already implemented in Cards.cpp)
+    // Issue card-based orders here if any cards exist in hand
+
+    for (const auto& card : hand->getCards())
+    {
+        CardPlayContext& context = CardPlayContext();
+        context.target = toDefend().front();
+        context.armies = 1;
+
+        card->play(this, deck, hand, context);
+    }
 
     return false;
 }
@@ -240,11 +372,6 @@ void Player::setArmies(int armyNumber)
 
 void Player::setTerritories(list<Territory*> newTerritories)
 {
-    for (Territory* territory : territories) 
-    {
-        delete territory;
-    }
-
     territories = newTerritories;
 }
 

@@ -269,6 +269,16 @@ std::ostream& operator<<(std::ostream& os, const Advance& order)
     return os << static_cast<const Order&>(order); 
 }
 
+Territory* Advance::getSource() const
+{
+    return source;
+}
+
+Territory* Advance::getTarget() const
+{
+	return target;
+}
+
 // Bomb Class Implementation -----------------------------------------------------------------------
 
 Bomb::Bomb() : Order("Bomb"), issuer(nullptr), target(nullptr) {} // Default constructor

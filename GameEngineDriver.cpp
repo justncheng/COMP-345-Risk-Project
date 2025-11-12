@@ -191,16 +191,45 @@ void testMainGameLoop() {
 		cout << player->getName() << " has " << player->getArmies() << " armies.\n";
     }
 
+    cout << "\nBefore issue orders phase:\n\n";
+    for (Player* player : *players) {
+        cout << player->getName() << " ordersList's: " << *(player->getOrdersList()) << "\n";
+    }
+
     //Order Issuing Phase Testing
-    gEngine.issueOrdersPhase(players);   
+    gEngine.issueOrdersPhase(players, deck);   
+
+    cout << "After issue orders phase:\n\n";
+    for (Player* player : *players) {
+        cout << player->getName() << " ordersList's: " << *(player->getOrdersList()) << "\n";
+    }
 
 	//Order Execution Phase Testing
+
+    cout << "Execute Orders Phase\n\n";
 	gEngine.executeOrdersPhase(players); 
 
+	players->at(0)->setTerritories(list<Territory*>()); //Manually eliminate Player 1 for testing purposes
+    
+	delete players->at(2); //Delete Player 3 to avoid memory leak
+	players->erase(players->begin() + 2); //Remove Player 3 from the players vector
+
+    for(Territory* territory : map->getTerritories()) {
+        if (territory->getOwner() != players->at(1)) {
+            players->at(1)->addTerritory(territory); //Give all territories to Player 2 for testing purposes
+            territory->setOwner(players->at(1));
+        }
+	}
+
+    players->at(1)->getHand()->addCard(make_unique<Card>(CardType::Reinforcement));
+
+    cout << "\n";
+
 	//Testing the main game loop
+    cout << "Main Game Loop\n\n";
 	gEngine.mainGameLoop(commandProcessor, map, players, deck);
 
-    cout << "\n=== Main Game Loop Testing Complete ===";
+    cout << "\n=== Main Game Loop Testing Complete ===\n";
 
     //Delete allocated memory
     delete commandProcessor;

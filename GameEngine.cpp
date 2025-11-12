@@ -212,8 +212,6 @@ void GameEngine::startupPhase(CommandProcessor*& commandProcessor, Map*& map, ve
 
 					this->transition(cmdName); //Move to the AssignReinforcements state
 
-                    //SWITCH TO PLAY PHASE
-
                     break;
                 }
             }
@@ -231,16 +229,18 @@ void GameEngine::mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, ve
     bool gameover = false;
     while (!gameover) {
         reinforcementPhase(map, players); //Distribute reinforcements to players
-        issueOrdersPhase(players); //Players issue orders
+        issueOrdersPhase(players, deck); //Players issue orders
 		executeOrdersPhase(players); //Execute orders issued by players
 
         for (int i = 0; i < players->size(); i++) {
             if (players->at(i)->getTerritories().size() == 0) {
+				cout << "\n" << players->at(i)->getName() << " has been eliminated from the game.\n";
+				delete players->at(i); //Free memory allocated to the player
                 players->erase(players->begin() + i);
                 i--;
             }
             else if (players->at(i)->getTerritories().size() == map->getTerritories().size()) {
-                cout << players->at(i)->getName() << " owns all territories and wins the game!\n";
+                cout << "\n" << players->at(i)->getName() << " owns all territories and wins the game!\n";
                 gameover = true;
                 break;
             }
@@ -274,12 +274,12 @@ void GameEngine::reinforcementPhase(Map*& map, vector<Player*>*& players) {
 	}
 }
 
-void GameEngine::issueOrdersPhase(vector<Player*>*& players) {
+void GameEngine::issueOrdersPhase(vector<Player*>*& players, Deck*& deck) {
     bool ordersIssued = true;
     while (ordersIssued) {   // Continue until no orders are issued in a full pass
         ordersIssued = false;
         for (Player* player : *players) {
-            if (player->issueOrder()) // Issues one order this pass
+            if (player->issueOrder(deck)) // Issues one order this pass
                 ordersIssued = true;  // At least one order was issued this pass
         }
     }
@@ -287,7 +287,6 @@ void GameEngine::issueOrdersPhase(vector<Player*>*& players) {
 
 void GameEngine::executeOrdersPhase(vector<Player*>*& players) {
     bool ordersRemaining = true;
-
     // Step 1: Execute all deploy orders for all players
     while (ordersRemaining) {
         ordersRemaining = false;   // Continue until no deploy orders are found in a full pass
@@ -299,7 +298,6 @@ void GameEngine::executeOrdersPhase(vector<Player*>*& players) {
                 if (order->getName() == "Deploy") {
                     if (order->validate()) order->execute();  // Execute the order if valid
                     else order->setExecuted(false);     // Mark as not executed if invalid
-                    delete order;
                     ordersList->remove(i);      // Remove the order from the list
                     ordersRemaining = true;
                     --i;          // Compensate for remove
@@ -317,9 +315,13 @@ void GameEngine::executeOrdersPhase(vector<Player*>*& players) {
             if (ordersList->size() > 0) {
                 Order* order = ordersList->getOrders()[0];  // Get the first order
                 if (order->getName() != "Deploy") {
-                    if (order->validate()) order->execute();
-                    else order->setExecuted(false);
-                    delete order;
+                    if (order->validate()) {
+                        order->execute();
+                    }
+                    else {
+                        order->setExecuted(false);
+                        cout << *order << "\n";
+                    }
                     ordersList->remove(0);
                     ordersRemaining = true;
                 }

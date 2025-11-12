@@ -42,7 +42,7 @@ class GameEngine : public Subject, public ILoggable{
 		// function to distribute reinforcements to players
         void reinforcementPhase(Map*& map, vector<Player*>*& players);
         // function to issue orders to players
-        void issueOrdersPhase(vector<Player*>*& players);
+        void issueOrdersPhase(vector<Player*>*& players, Deck*& deck);
         // function to execute orders 
         void executeOrdersPhase(vector<Player*>*& players);
 

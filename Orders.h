@@ -105,6 +105,9 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Advance& order); // Stream insertion operator
 
+    Territory* getSource() const;
+	Territory* getTarget() const;
+
 private:
     Player* issuer; // Player issuing the order
     Territory* source; // Source territory

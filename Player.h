@@ -26,10 +26,10 @@ class Player //Player class represents a player playing the game
         bool operator != (const Player& player); //Not Equals Operator Overloading
         friend ostream& operator << (ostream &output, const Player &player); //Stream Insertion Operator Overloading
 
-        list<Territory> toDefend(); //Returns list of territories to defend
-        list<Territory> toAttack(); //Returns list of territories to attack
+        list<Territory*> toDefend(); //Returns list of territories to defend
+        list<Territory*> toAttack(); //Returns list of territories to attack
         // bool hasOrdersToIssue();
-        bool issueOrder();
+        bool issueOrder(Deck* deck);
         void issueOrder(Order* order); //Issues an order
 
 		void addTerritory(Territory* territory); //Adds a territory to the player's list of territories

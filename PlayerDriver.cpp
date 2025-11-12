@@ -8,7 +8,8 @@ void testPlayers() //Free function that tests the Player class's functionality
     cout << "=== Players Testing ===\n\n";
 
     Player* player1 = new Player(); //Creates new Player
-	player1->setTerritories({ new Territory("TerritoryA", 10, 30, "ContinentB"), new Territory("TerritoryB", 30, 20, "ContinentB") }); //Adds territories to the player
+	list<Territory*> testTerritories = { new Territory("TerritoryA", 10, 30, "ContinentB"), new Territory("TerritoryB", 30, 20, "ContinentB") }; //Creates list of territories
+	player1->setTerritories(testTerritories); //Adds territories to the player
     player1->getHand()->addCard(make_unique<Card>(CardType::Bomb)); //Adds a card to the player's hand
     player1->getHand()->addCard(make_unique<Card>(CardType::Reinforcement)); //Adds a card to the player's hand
 
@@ -17,10 +18,10 @@ void testPlayers() //Free function that tests the Player class's functionality
 
     cout << "Player toDefend() method\n----------------------------\n";
     
-    list<Territory> toDefendTerritories = player1->toDefend(); //Tests the toDefend() method
+    list<Territory*> toDefendTerritories = player1->toDefend(); //Tests the toDefend() method
 
     //Prints the list of territories
-    for(const Territory& territory : toDefendTerritories)
+    for(const Territory* territory : toDefendTerritories)
     {
         cout << territory;
 
@@ -32,10 +33,10 @@ void testPlayers() //Free function that tests the Player class's functionality
 
     cout << "\n\nPlayer toAttack() method\n----------------------------\n";
     
-    list<Territory> toAttackTerritories = player1->toAttack(); //Tests the toAttack() method
+    list<Territory*> toAttackTerritories = player1->toAttack(); //Tests the toAttack() method
 
     //Prints the list of territories
-    for(const Territory& territory : toAttackTerritories)
+    for(const Territory* territory : toAttackTerritories)
     {
         cout << territory;
 
@@ -56,6 +57,11 @@ void testPlayers() //Free function that tests the Player class's functionality
 
     //Deletes the player
     delete player1;
+
+    for(Territory* territory : testTerritories)
+    {
+        delete territory;
+	}
 
     cout << "\n=== Players Testing Complete ===\n\n";
 }

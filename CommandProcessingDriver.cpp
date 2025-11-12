@@ -4,6 +4,8 @@ using namespace std;
 
 
 void testCommandProcessor(int argc, char* argv[]) {
+    cout << "=== Command Processing Testing ===\n\n";
+
     CommandProcessor* processor;
 
     // Parse command line arguments
@@ -39,5 +41,6 @@ void testCommandProcessor(int argc, char* argv[]) {
         }
     }
     delete processor;
-
+    
+    cout << "=== Command Processing Testing Complete ===\n\n";
 }
