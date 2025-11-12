@@ -239,11 +239,11 @@ void GameEngine::mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, ve
                 players->erase(players->begin() + i);
                 i--;
             }
-        }
-
-        if (players->size() == 1) {
-            cout << players->at(0)->getName() << " is the winner!\n\n";
-            gameover = true;
+            else if (players->at(i)->getTerritories().size() == map->getTerritories().size()) {
+                cout << players->at(i)->getName() << " owns all territories and wins the game!\n";
+                gameover = true;
+                break;
+            }
         }
     }
 }
@@ -291,7 +291,7 @@ void GameEngine::executeOrdersPhase(vector<Player*>*& players) {
     // Step 1: Execute all deploy orders for all players
     while (ordersRemaining) {
         ordersRemaining = false;   // Continue until no deploy orders are found in a full pass
-        for (auto player : *players) {
+        for (Player* player : *players) {
             OrdersList* ordersList = player->getOrdersList();  // Get the player's orders list
             for (int i = 0; i < ordersList->size(); i++) {
                 Order* order = ordersList->getOrders() [i];  // Get the order at index i

@@ -150,7 +150,7 @@ void Player::issueOrder(Order* order)
 
 bool Player::issueOrder()
 {
-    // deploy phase and if player hasarmies, issue deploy orders first
+    // deploy phase and if player has armies, issue deploy orders first
     while(armies > 0) {     // while loop to deploy all armies
         list<Territory> defendList = toDefend(); // get territories to defend
         Territory* deployTerritory = nullptr;
