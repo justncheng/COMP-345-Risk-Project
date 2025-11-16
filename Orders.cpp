@@ -245,6 +245,10 @@ void Advance::execute() // Executes the Advance order
         setEffect("attacked " + target->getName() + ": failed (def " + std::to_string(defAfter) + " left).");
     }
 
+    if (target->getOwner()->getPlayerStrategy() == "Neutral") {
+        target->getOwner()->setPlayerStrategy(new AggressivePlayerStrategy(target->getOwner()));
+    }
+
     setName("Advance (executed)");
     setExecuted(true);
     std::cout << *this << std::endl;
@@ -341,6 +345,10 @@ void Bomb::execute() // Executes the Bomb order
     int removed = cur / 2; // remove half (floor)
     target->setArmies(cur - removed);
 
+    if (target->getOwner()->getPlayerStrategy() == "Neutral") {
+        target->getOwner()->setPlayerStrategy(new AggressivePlayerStrategy(target->getOwner()));
+    }
+
     setEffect("bombed " + target->getName() + " removing " + std::to_string(removed));
     setName("Bomb (executed)");
     setExecuted(true);
@@ -408,6 +416,7 @@ void Blockade::execute() // Executes the Blockade order
 
     target->setArmies(target->getArmies() * 2);
     target->setOwner(nullptr); // neutral player placeholder
+    issuer->removeTerritory(target);
 
     setEffect("blockaded " + target->getName() + " (doubled, transferred to Neutral)");
     setName("Blockade (executed)");

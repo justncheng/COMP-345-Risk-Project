@@ -5,6 +5,7 @@
 #include "Map.h"
 #include "Orders.h"
 #include "Cards.h"
+#include "PlayerStrategies.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ class Player //Player class represents a player playing the game
 {
     public:
         Player(); //Default Constructor
-        Player(string name); //Parameterized Constructor
+        Player(string name, PlayerStrategy* playerStrategy); //Parameterized Constructor
         Player(const Player& player); //Copy Constructor
         ~Player(); //Destructor
         Player& operator = (const Player& player); //Assignment Operator Overloading
@@ -28,11 +29,11 @@ class Player //Player class represents a player playing the game
 
         list<Territory*> toDefend(); //Returns list of territories to defend
         list<Territory*> toAttack(); //Returns list of territories to attack
-        // bool hasOrdersToIssue();
-        bool issueOrder(Deck* deck);
+        bool issueOrder(Deck* deck); //Returns if an order was issued
         void issueOrder(Order* order); //Issues an order
 
 		void addTerritory(Territory* territory); //Adds a territory to the player's list of territories
+        void removeTerritory(Territory* territory); //Removes a territory from the player's list of territories
 
         //Mutator Methods (Setters)
         void setName(string newName);
@@ -40,6 +41,7 @@ class Player //Player class represents a player playing the game
         void setTerritories(list<Territory*> newTerritories); //Sets list of territories
         void setHand(Hand* newHand); //Sets hand
         void setOrdersList(OrdersList* newOrdersList); //Sets orders list
+        void setPlayerStrategy(PlayerStrategy* newStrategy); //Sets strategy
 
         //Accessor Methods (Getters)
 		string getName(); //Returns name
@@ -47,6 +49,7 @@ class Player //Player class represents a player playing the game
         list<Territory*> getTerritories(); //Returns list of territories
         Hand* getHand(); //Returns hand
         OrdersList* getOrdersList(); //Returns orders list
+        string getPlayerStrategy(); //Returns player strategy
 
     private:
         //Data Members
@@ -55,4 +58,5 @@ class Player //Player class represents a player playing the game
         list<Territory*> territories;
         Hand* hand;
         OrdersList* ordersList;
+        PlayerStrategy* playerStrategy;
 };
