@@ -105,9 +105,17 @@ void testMainGameLoop() {
 	map = MapLoader::loadMap("TestMap.map"); //Load a test map
 
 	//Add players
-	players->push_back(new Player("Player 1"));
-    players->push_back(new Player("Player 2"));
-    players->push_back(new Player("Player 3"));
+    Player* p1 = new Player();      // default constructor sets HumanPlayerStrategy(this)
+    p1->setName("Player 1");
+    players->push_back(p1);
+
+    Player* p2 = new Player();
+    p2->setName("Player 2");
+    players->push_back(p2);
+
+    Player* p3 = new Player();
+    p3->setName("Player 3");
+    players->push_back(p3);
 
 	//Distribute territories manually for testing
 

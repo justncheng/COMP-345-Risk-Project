@@ -3,6 +3,7 @@
 #include "Orders.h"
 #include "Cards.h"
 #include "Player.h"
+#include <set>
 
 //PlayerStrategy class implementation
 
@@ -67,17 +68,248 @@ HumanPlayerStrategy* HumanPlayerStrategy::clone() //Clone function
 
 bool HumanPlayerStrategy::issueOrder(Deck* deck)
 {
-	return false;
+	using std::cout;
+	using std::cin;
+	using std::endl;
+
+	// Basic menu for human interaction
+	cout << "\n=== Human Player (" << player->getName() << ") - Issue Order ===\n";
+	cout << "Reinforcement armies available: " << player->getArmies() << "\n";
+
+	cout << "Choose an action:\n";
+	cout << "  1) Deploy armies\n";
+	cout << "  2) Advance armies\n";
+	cout << "  3) Play a card\n";
+	cout << "  4) Done issuing orders\n";
+	cout << "Enter choice: ";
+
+	int choice;
+	cin >> choice;
+
+	// Clear input errors if any
+	if (!cin) {
+		cin.clear();
+		cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		return false;
+	}
+
+	// Helper lambdas to show territories/cards
+	auto showTerritories = [this]() {
+		using std::cout;
+		using std::endl;
+
+		cout << "\nYour territories:\n";
+		int idx = 0;
+		for (Territory* t : player->getTerritories()) {
+			cout << "  [" << idx << "] "
+				<< t->getName()
+				<< " (armies: " << t->getArmies() << ")\n";
+			++idx;
+		}
+		};
+
+	auto getTerritoryByIndex = [this](int index) -> Territory* {
+		if (index < 0) return nullptr;
+		int i = 0;
+		for (Territory* t : player->getTerritories()) {
+			if (i == index) return t;
+			++i;
+		}
+		return nullptr;
+		};
+
+	switch (choice) {
+	case 1: { // Deploy
+		if (player->getArmies() <= 0) {
+			cout << "You have no reinforcement armies to deploy.\n";
+			return false;
+		}
+
+		showTerritories();
+		cout << "Enter index of territory to deploy to: ";
+		int idx;
+		cin >> idx;
+
+		Territory* target = getTerritoryByIndex(idx);
+		if (!target) {
+			cout << "Invalid territory index.\n";
+			return false;
+		}
+
+		cout << "Enter number of armies to deploy (max "
+			<< player->getArmies() << "): ";
+		int num;
+		cin >> num;
+
+		if (num <= 0 || num > player->getArmies()) {
+			cout << "Invalid army amount.\n";
+			return false;
+		}
+
+		player->issueOrder(new Deploy(player, target, num));
+		player->setArmies(player->getArmies() - num);
+		cout << "Issued Deploy(" << num << " -> " << target->getName() << ")\n";
+		return true;
+	}
+
+	case 2: { // Advance
+		showTerritories();
+		cout << "Enter index of source territory: ";
+		int srcIdx;
+		cin >> srcIdx;
+		Territory* src = getTerritoryByIndex(srcIdx);
+		if (!src) {
+			cout << "Invalid source index.\n";
+			return false;
+		}
+
+		if (src->getArmies() <= 1) {
+			cout << "Source territory must have more than 1 army to advance.\n";
+			return false;
+		}
+
+		cout << "\nAdjacent territories from " << src->getName() << ":\n";
+		int idx = 0;
+		std::vector<Territory*> adjList;
+		for (Territory* adj : src->getAdjacentTerritories()) {
+			cout << "  [" << idx << "] "
+				<< adj->getName()
+				<< " (owner: "
+				<< (adj->getOwner() ? adj->getOwner()->getName() : "None")
+				<< ", armies: " << adj->getArmies() << ")\n";
+			adjList.push_back(adj);
+			++idx;
+		}
+
+		if (adjList.empty()) {
+			cout << "No adjacent territories to advance to.\n";
+			return false;
+		}
+
+		cout << "Enter index of destination territory: ";
+		int dstIdx;
+		cin >> dstIdx;
+		if (dstIdx < 0 || dstIdx >= static_cast<int>(adjList.size())) {
+			cout << "Invalid destination index.\n";
+			return false;
+		}
+
+		Territory* dst = adjList[dstIdx];
+
+		cout << "Enter number of armies to advance (max "
+			<< (src->getArmies() - 1) << "): ";
+		int num;
+		cin >> num;
+		if (num <= 0 || num >= src->getArmies()) {
+			cout << "Invalid army amount.\n";
+			return false;
+		}
+
+		player->issueOrder(new Advance(player, src, dst, num));
+		cout << "Issued Advance(" << num << " from "
+			<< src->getName() << " to " << dst->getName() << ")\n";
+		return true;
+	}
+
+	case 3: { // Play card
+		Hand* hand = player->getHand();
+		auto& cards = hand->getCards();
+
+		if (cards.empty()) {
+			cout << "You have no cards to play.\n";
+			return false;
+		}
+
+		cout << "\nYour cards:\n";
+		int idx = 0;
+
+		for (const auto& uptr : cards) {
+			Card* c = uptr.get();
+			cout << "  [" << idx << "] " << c->getTypeAsString() << "\n";
+			++idx;
+		}
+
+		cout << "Enter index of card to play: ";
+		int cardIdx;
+		cin >> cardIdx;
+		if (cardIdx < 0 || cardIdx >= static_cast<int>(cards.size())) {
+			cout << "Invalid card index.\n";
+			return false;
+		}
+
+		Card* card = cards[cardIdx].get();
+		std::string type = card->getTypeAsString();
+		CardPlayContext context; // default context
+
+		if (type == "Bomb") {
+			// choose enemy territory to bomb
+			cout << "\nChoose enemy territory to bomb:\n";
+			std::vector<Territory*> enemyTerr;
+			int i = 0;
+
+			list<Territory*> attackList = toAttack();
+			for (Territory* t : attackList) { // if you have such helper; otherwise build like toAttack()
+				cout << "  [" << i << "] " << t->getName()
+					<< " (owner: " << t->getOwner()->getName()
+					<< ", armies: " << t->getArmies() << ")\n";
+				enemyTerr.push_back(t);
+				++i;
+			}
+			if (enemyTerr.empty()) {
+				cout << "No enemy territories in range to bomb.\n";
+				return false;
+			}
+			int tIdx;
+			cin >> tIdx;
+			if (tIdx < 0 || tIdx >= static_cast<int>(enemyTerr.size())) {
+				cout << "Invalid target index.\n";
+				return false;
+			}
+			context.target = enemyTerr[tIdx];
+		}
+		// For brevity, you can similarly ask inputs for Airlift, Blockade, Negotiate
+		// depending on your CardPlayContext structure.
+
+		card->play(player, deck, hand, context);
+		cout << "Played card: " << type << "\n";
+		return true;
+	}
+
+	case 4:
+	default:
+		cout << "Done issuing orders for this turn.\n";
+		return false;
+	}
 }
 
 list<Territory*> HumanPlayerStrategy::toDefend()
 {
-	return {};
+	// For a human, just return all owned territories; the player decides in issueOrder.
+	list<Territory*> defendList;
+	for (Territory* t : player->getTerritories()) {
+		defendList.push_back(t);
+	}
+	return defendList;
 }
 
 list<Territory*> HumanPlayerStrategy::toAttack()
 {
-	return {};
+	// All adjacent enemy territories to any of the human player's territories.
+	list<Territory*> attackList;
+	std::set<Territory*> seen;
+
+	for (Territory* t : player->getTerritories()) {
+		for (Territory* adj : t->getAdjacentTerritories()) {
+			if (adj->getOwner() != player && adj->getOwner() != nullptr) {
+				if (!seen.count(adj)) {
+					seen.insert(adj);
+					attackList.push_back(adj);
+				}
+			}
+		}
+	}
+
+	return attackList;
 }
 
 string HumanPlayerStrategy::getStrategyString()
@@ -552,17 +784,64 @@ CheaterPlayerStrategy* CheaterPlayerStrategy::clone() //Clone function
 
 bool CheaterPlayerStrategy::issueOrder(Deck* deck)
 {
+	std::set<Territory*> toConquer;
+
+	// Collect all adjacent enemy territories
+	for (Territory* myTerr : player->getTerritories()) {
+		for(Territory* adjTerr : myTerr->getAdjacentTerritories()) {
+			if (adjTerr->getOwner() != player) {
+				toConquer.insert(adjTerr);
+			}
+		}
+	}
+
+	if (toConquer.empty()) {
+		return false; // No territories to conquer
+	}
+
+	// Perform the conquest
+	for(Territory* enemyTerr : toConquer) {
+		Player* previousOwner = enemyTerr->getOwner();
+		if (previousOwner != nullptr) {
+			previousOwner->removeTerritory(enemyTerr);
+		}
+		enemyTerr->setOwner(player);
+		player->addTerritory(enemyTerr);
+	}
+
+	std::cout << "Cheater Player " << player->getName() << " has conquered " << toConquer.size() << " adjacent territories! \n" << std::endl;
+
+	// We don't issue traditional orders, return false
 	return false;
 }
 
 list<Territory*> CheaterPlayerStrategy::toDefend()
 {
-	return {};
+	list<Territory*> defendList;
+	for(Territory* territory : player->getTerritories())
+	{
+		defendList.push_back(territory);
+	}
+	return defendList;
 }
 
 list<Territory*> CheaterPlayerStrategy::toAttack()
 {
-	return {};
+	list<Territory*> attackList;
+	std::set<Territory*> uniqueAttackList; // To avoid duplicates
+
+	for(Territory* myTerr : player->getTerritories()) {
+		for(Territory* adjTerr : myTerr->getAdjacentTerritories()) {
+			if (adjTerr->getOwner() != player && adjTerr->getOwner() != nullptr) {
+				if(!uniqueAttackList.count(adjTerr)) {
+					uniqueAttackList.insert(adjTerr);
+					attackList.push_back(adjTerr);
+				}
+			}
+		}
+	}
+
+	return attackList;
 }
 
 string CheaterPlayerStrategy::getStrategyString()

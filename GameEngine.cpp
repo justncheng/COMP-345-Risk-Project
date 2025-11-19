@@ -150,7 +150,9 @@ void GameEngine::startupPhase(CommandProcessor*& commandProcessor, Map*& map, ve
                     command->saveEffect("Cannot add more players. Maximum limit reached.");
 				}
                 else {
-                    players->push_back(new Player(cmdArg)); //Add new player
+                    Player* p = new Player(); //Add new player
+                    p->setName(cmdArg);
+                    players->push_back(p);
                     this->transition(cmdName); //Move to the PlayersAdded state
                 }
             }
@@ -228,6 +230,12 @@ void GameEngine::startupPhase(CommandProcessor*& commandProcessor, Map*& map, ve
 void GameEngine::mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck) {
     bool gameover = false;
     while (!gameover) {
+
+        // Clear all negotiate effects from the previous turn
+        for (Player* p : *players) {
+			p->clearNegotiatedPlayers(); // Lasts only for one turn
+        }
+
         reinforcementPhase(map, players); //Distribute reinforcements to players
         issueOrdersPhase(players, deck); //Players issue orders
 		executeOrdersPhase(players); //Execute orders issued by players

@@ -187,6 +187,15 @@ bool Advance::validate() const // Validates the Advance order
     // must be adjacent
     if (!source->isAdjacentTo(target))
         return false;
+    
+    // If target is enemy and there is a truce, this attack is invalid
+    Player* defender = target->getOwner();
+    if (defender && defender != issuer) {
+        // Either direction counts, but we store symmetric truces anyway
+        if (issuer->hasNegotiatedWith(defender) || defender->hasNegotiatedWith(issuer)) {
+            return false; // attack invalid due to Negotiate
+        }
+    }
 
     return true;
 }
@@ -316,6 +325,11 @@ bool Bomb::validate() const // Validates the Bomb order
     Player* tgtOwner = target->getOwner();
     if (!tgtOwner || tgtOwner == issuer)
         return false; // must target an enemy
+
+    // If there is a truce, bombing that player is not allowed
+    if (issuer->hasNegotiatedWith(tgtOwner) || tgtOwner->hasNegotiatedWith(issuer)) {
+        return false; // invalid due to Negotiate
+    }
 
     // must be adjacent to at least one issuer-owned territory
     bool adjacentToIssuer = false;
@@ -556,10 +570,16 @@ void Negotiate::execute() // Executes the Negotiate order
     if (!validate())
     {
         setEffect("Negotiate order execution failed: Invalid order.");
+        setExecuted(false);
         cout << *this << endl;
         Notify(this);
         return;
     }
+
+    // Register a mutual truce for this turn
+    issuer->addNegotiatedPlayer(targetPlayer);
+    targetPlayer->addNegotiatedPlayer(issuer);
+
     setEffect("negotiated temporary peace with " + targetPlayer->getName());
     setName("Negotiate (executed)");
     setExecuted(true);

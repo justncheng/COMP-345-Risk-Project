@@ -227,3 +227,20 @@ string Player::getPlayerStrategy()
 {
     return playerStrategy->getStrategyString();
 }
+
+void Player::addNegotiatedPlayer(Player* other) {
+    if (!other || other == this) return;
+    // avoid duplicates
+    if (std::find(negotiatedPlayers.begin(), negotiatedPlayers.end(), other) == negotiatedPlayers.end()) {
+        negotiatedPlayers.push_back(other);
+    }
+}
+
+bool Player::hasNegotiatedWith(Player* other) const {
+    if (!other) return false;
+    return std::find(negotiatedPlayers.begin(), negotiatedPlayers.end(), other) != negotiatedPlayers.end();
+}
+
+void Player::clearNegotiatedPlayers() {
+    negotiatedPlayers.clear();
+}

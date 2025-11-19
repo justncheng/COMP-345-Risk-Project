@@ -51,6 +51,11 @@ class Player //Player class represents a player playing the game
         OrdersList* getOrdersList(); //Returns orders list
         string getPlayerStrategy(); //Returns player strategy
 
+        //For tracking truces
+        void addNegotiatedPlayer(Player* other);
+        bool hasNegotiatedWith(Player* other) const;
+        void clearNegotiatedPlayers();
+
     private:
         //Data Members
         string name;
@@ -58,5 +63,6 @@ class Player //Player class represents a player playing the game
         list<Territory*> territories;
         Hand* hand;
         OrdersList* ordersList;
+        std::vector<Player*> negotiatedPlayers;
         PlayerStrategy* playerStrategy;
 };

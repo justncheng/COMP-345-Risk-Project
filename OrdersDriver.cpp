@@ -75,8 +75,12 @@ void testOrderExecution() {
     cout << "\n=== Testing Order Execution ===\n\n";
 
     // --- Setup players and territories ---
-    Player* player1 = new Player("Player 1");
-    Player* player2 = new Player("Player 2");
+
+
+    Player* player1 = new Player();
+	player1->setName("Player1");
+    Player* player2 = new Player();
+	player2->setName("Player2");
 
     Territory* A1 = new Territory("A1", 0, 0, "ContinentA");
     Territory* A2 = new Territory("A2", 1, 0, "ContinentA");
