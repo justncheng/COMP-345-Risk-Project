@@ -56,4 +56,9 @@ void testPlayerStrategies()
 	gEngine.mainGameLoop(commandProcessor, map, players, deck);
 
 	cout << "\n=== Player Strategies Testing Complete ===\n\n";
+
+	delete commandProcessor;
+	delete map;
+	delete players;
+	delete deck;
 }
