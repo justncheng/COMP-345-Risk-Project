@@ -5,13 +5,10 @@
 #include "GameEngineDriver.h"
 #include "LoggingObserverDriver.h"
 #include "CommandProcessingDriver.h"
+#include "PlayerStrategiesDriver.h"
 
 int main(int argc, char* argv[]) 
 {
-    testCommandProcessor(argc, argv);
-    testStartupPhase();
-    testMainGameLoop();
-    testOrderExecution();
-    testLoggingObserver();
+    testPlayerStrategies();
     return 0;
 }

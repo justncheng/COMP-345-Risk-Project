@@ -2,6 +2,7 @@
 #include "CommandProcessing.h"
 #include "Map.h"
 #include "Player.h"
+#include "PlayerStrategies.h"
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
@@ -163,52 +164,7 @@ void GameEngine::startupPhase(CommandProcessor*& commandProcessor, Map*& map, ve
 					command->saveEffect("2 players are necessary to start the game. Please add more players."); //Update the command's effect
                 }
                 else {
-                    srand(time(NULL)); //Seed randomizer
-
-                    int territoriesPerPlayer;
-
-                    territoriesPerPlayer = map->getTerritories().size() / players->size(); //Calculate territories per player
-
-                    //Iterate through all territories in the map
-                    for (Territory* territory : map->getTerritories()) {
-                        int randomIndex;
-
-						int totalTerritoriesAssigned = 0;
-
-                        for(int i = 0; i < players->size(); i++) {
-							totalTerritoriesAssigned += players->at(i)->getTerritories().size();
-						}
-
-                        //Check if each player has recieved the minimum number of territories per player
-                        if(totalTerritoriesAssigned == territoriesPerPlayer * players->size()) {
-							territoriesPerPlayer++; //Increase territories per player to assign remaining territories
-						}
-
-                        do {
-                            randomIndex = rand() % players->size(); //Randomly pick a player
-						} while (players->at(randomIndex)->getTerritories().size() >= territoriesPerPlayer); //Check if the player has already recieved the maximum number of territories
-
-						players->at(randomIndex)->addTerritory(territory); //Assign the territory to the player
-						territory->setOwner(players->at(randomIndex)); //Assign the player as the owner of the territory
-                    }
-
-					vector<Player*>* shuffledPlayers = new vector<Player*>(); //Declare a vector of players to randomize order of play
-
-					//While there are still players to be shuffled
-                    while(players->size() > 0) {
-						int randomIndex = rand() % players->size(); //Randomly pick a player
-						shuffledPlayers->push_back(players->at(randomIndex)); //Add the player to the shuffled vector
-						players->erase(players->begin() + randomIndex); //Remove the player from the original vector
-					}
-
-					players = shuffledPlayers; //Assign the original vector to the shuffled vector
-
-                    //Iterate through all players
-                    for (int i = 0; i < players->size(); i++) {
-						players->at(i)->setArmies(50); //Assign 50 armies
-                        players->at(i)->getHand()->addCard(deck->draw()); //Draw a card from the deck
-                        players->at(i)->getHand()->addCard(deck->draw()); //Draw a card from the deck
-                    }
+					startupPhaseProcess(commandProcessor, map, players, deck); //Run the startup phase process
 
                     cout << "\n" << command->getEffect() << "\n"; //Print the command's effect
 
@@ -226,10 +182,71 @@ void GameEngine::startupPhase(CommandProcessor*& commandProcessor, Map*& map, ve
 	}
 }
 
+//Run the startup phase process (assign territories, determine order of play, etc.)
+void GameEngine::startupPhaseProcess(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck)
+{
+    srand(time(NULL)); //Seed randomizer
+
+    int territoriesPerPlayer;
+
+    territoriesPerPlayer = map->getTerritories().size() / players->size(); //Calculate territories per player
+
+    //Iterate through all territories in the map
+    for (Territory* territory : map->getTerritories()) {
+        int randomIndex;
+
+        int totalTerritoriesAssigned = 0;
+
+        for (int i = 0; i < players->size(); i++) {
+            totalTerritoriesAssigned += players->at(i)->getTerritories().size();
+        }
+
+        //Check if each player has recieved the minimum number of territories per player
+        if (totalTerritoriesAssigned == territoriesPerPlayer * players->size()) {
+            territoriesPerPlayer++; //Increase territories per player to assign remaining territories
+        }
+
+        do {
+            randomIndex = rand() % players->size(); //Randomly pick a player
+        } while (players->at(randomIndex)->getTerritories().size() >= territoriesPerPlayer); //Check if the player has already recieved the maximum number of territories
+
+        players->at(randomIndex)->addTerritory(territory); //Assign the territory to the player
+        territory->setOwner(players->at(randomIndex)); //Assign the player as the owner of the territory
+    }
+
+    vector<Player*>* shuffledPlayers = new vector<Player*>(); //Declare a vector of players to randomize order of play
+
+    //While there are still players to be shuffled
+    while (players->size() > 0) {
+        int randomIndex = rand() % players->size(); //Randomly pick a player
+        shuffledPlayers->push_back(players->at(randomIndex)); //Add the player to the shuffled vector
+        players->erase(players->begin() + randomIndex); //Remove the player from the original vector
+    }
+
+    players = shuffledPlayers; //Assign the original vector to the shuffled vector
+
+    //Iterate through all players
+    for (int i = 0; i < players->size(); i++) {
+        players->at(i)->setArmies(50); //Assign 50 armies
+        players->at(i)->getHand()->addCard(deck->draw()); //Draw a card from the deck
+        players->at(i)->getHand()->addCard(deck->draw()); //Draw a card from the deck
+    }
+}
+
 //Run the main game loop
 void GameEngine::mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck) {
+	int currentTurn = 0;
     bool gameover = false;
     while (!gameover) {
+        currentTurn++;
+		cout << "\nTurn " << currentTurn << "\n-------\n";
+		cout << "Game status:\n";
+
+        for (Player* p : *players) {
+            cout << *p;
+        }
+
+        cout << "\n";
 
         // Clear all negotiate effects from the previous turn
         for (Player* p : *players) {
@@ -283,13 +300,20 @@ void GameEngine::reinforcementPhase(Map*& map, vector<Player*>*& players) {
 }
 
 void GameEngine::issueOrdersPhase(vector<Player*>*& players, Deck*& deck) {
+    bool firstTurn = true;
     bool ordersIssued = true;
     while (ordersIssued) {   // Continue until no orders are issued in a full pass
         ordersIssued = false;
         for (Player* player : *players) {
+            if(!firstTurn && player->getPlayerStrategy()->getStrategyString() != "Human")
+                continue;
             if (player->issueOrder(deck)) // Issues one order this pass
                 ordersIssued = true;  // At least one order was issued this pass
         }
+
+        if(firstTurn) {
+            firstTurn = false;
+		}
     }
 }
 

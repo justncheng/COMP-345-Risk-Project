@@ -37,6 +37,8 @@ class GameEngine : public Subject, public ILoggable{
 
 		// function to handle the startup phase
         void startupPhase(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck);
+		// function to process the startup phase (assign territories, determine order of play, etc.)
+        void startupPhaseProcess(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck);
 		// function to handle the main game loop
         void mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, vector<Player*>*& players, Deck*& deck);
 		// function to distribute reinforcements to players

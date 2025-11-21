@@ -30,13 +30,23 @@ PlayerStrategy& PlayerStrategy::operator = (const PlayerStrategy& playerStrategy
 
 ostream& operator << (ostream& output, const PlayerStrategy& playerStrategy) //Stream Insertion Operator Overloading
 {
-	output << "Strategy Type: AbstractPlayerStrategy\n";
+	output << "Strategy Type: " << playerStrategy.getStrategyString() << "\n";
 	return output;
+}
+
+void PlayerStrategy::setPlayer(Player* player)
+{
+	this->player = player;
 }
 
 Player* PlayerStrategy::getPlayer()
 {
 	return player;
+}
+
+string PlayerStrategy::getStrategyString() const
+{
+	return "Abstract";
 }
 
 //HumanPlayerStrategy class implementation
@@ -57,7 +67,7 @@ HumanPlayerStrategy& HumanPlayerStrategy::operator = (const HumanPlayerStrategy&
 
 ostream& operator << (ostream& output, const HumanPlayerStrategy& playerStrategy) //Stream Insertion Operator Overloading
 {
-	output << "Strategy Type: HumanPlayerStrategy\n";
+	output << "Strategy Type: Human\n";
 	return output;
 }
 
@@ -68,12 +78,9 @@ HumanPlayerStrategy* HumanPlayerStrategy::clone() //Clone function
 
 bool HumanPlayerStrategy::issueOrder(Deck* deck)
 {
-	using std::cout;
-	using std::cin;
-	using std::endl;
-
 	// Basic menu for human interaction
 	cout << "\n=== Human Player (" << player->getName() << ") - Issue Order ===\n";
+
 	cout << "Reinforcement armies available: " << player->getArmies() << "\n";
 
 	cout << "Choose an action:\n";
@@ -95,9 +102,6 @@ bool HumanPlayerStrategy::issueOrder(Deck* deck)
 
 	// Helper lambdas to show territories/cards
 	auto showTerritories = [this]() {
-		using std::cout;
-		using std::endl;
-
 		cout << "\nYour territories:\n";
 		int idx = 0;
 		for (Territory* t : player->getTerritories()) {
@@ -106,7 +110,7 @@ bool HumanPlayerStrategy::issueOrder(Deck* deck)
 				<< " (armies: " << t->getArmies() << ")\n";
 			++idx;
 		}
-		};
+	};
 
 	auto getTerritoryByIndex = [this](int index) -> Territory* {
 		if (index < 0) return nullptr;
@@ -116,169 +120,169 @@ bool HumanPlayerStrategy::issueOrder(Deck* deck)
 			++i;
 		}
 		return nullptr;
-		};
+	};
 
 	switch (choice) {
-	case 1: { // Deploy
-		if (player->getArmies() <= 0) {
-			cout << "You have no reinforcement armies to deploy.\n";
-			return false;
-		}
-
-		showTerritories();
-		cout << "Enter index of territory to deploy to: ";
-		int idx;
-		cin >> idx;
-
-		Territory* target = getTerritoryByIndex(idx);
-		if (!target) {
-			cout << "Invalid territory index.\n";
-			return false;
-		}
-
-		cout << "Enter number of armies to deploy (max "
-			<< player->getArmies() << "): ";
-		int num;
-		cin >> num;
-
-		if (num <= 0 || num > player->getArmies()) {
-			cout << "Invalid army amount.\n";
-			return false;
-		}
-
-		player->issueOrder(new Deploy(player, target, num));
-		player->setArmies(player->getArmies() - num);
-		cout << "Issued Deploy(" << num << " -> " << target->getName() << ")\n";
-		return true;
-	}
-
-	case 2: { // Advance
-		showTerritories();
-		cout << "Enter index of source territory: ";
-		int srcIdx;
-		cin >> srcIdx;
-		Territory* src = getTerritoryByIndex(srcIdx);
-		if (!src) {
-			cout << "Invalid source index.\n";
-			return false;
-		}
-
-		if (src->getArmies() <= 1) {
-			cout << "Source territory must have more than 1 army to advance.\n";
-			return false;
-		}
-
-		cout << "\nAdjacent territories from " << src->getName() << ":\n";
-		int idx = 0;
-		std::vector<Territory*> adjList;
-		for (Territory* adj : src->getAdjacentTerritories()) {
-			cout << "  [" << idx << "] "
-				<< adj->getName()
-				<< " (owner: "
-				<< (adj->getOwner() ? adj->getOwner()->getName() : "None")
-				<< ", armies: " << adj->getArmies() << ")\n";
-			adjList.push_back(adj);
-			++idx;
-		}
-
-		if (adjList.empty()) {
-			cout << "No adjacent territories to advance to.\n";
-			return false;
-		}
-
-		cout << "Enter index of destination territory: ";
-		int dstIdx;
-		cin >> dstIdx;
-		if (dstIdx < 0 || dstIdx >= static_cast<int>(adjList.size())) {
-			cout << "Invalid destination index.\n";
-			return false;
-		}
-
-		Territory* dst = adjList[dstIdx];
-
-		cout << "Enter number of armies to advance (max "
-			<< (src->getArmies() - 1) << "): ";
-		int num;
-		cin >> num;
-		if (num <= 0 || num >= src->getArmies()) {
-			cout << "Invalid army amount.\n";
-			return false;
-		}
-
-		player->issueOrder(new Advance(player, src, dst, num));
-		cout << "Issued Advance(" << num << " from "
-			<< src->getName() << " to " << dst->getName() << ")\n";
-		return true;
-	}
-
-	case 3: { // Play card
-		Hand* hand = player->getHand();
-		auto& cards = hand->getCards();
-
-		if (cards.empty()) {
-			cout << "You have no cards to play.\n";
-			return false;
-		}
-
-		cout << "\nYour cards:\n";
-		int idx = 0;
-
-		for (const auto& uptr : cards) {
-			Card* c = uptr.get();
-			cout << "  [" << idx << "] " << c->getTypeAsString() << "\n";
-			++idx;
-		}
-
-		cout << "Enter index of card to play: ";
-		int cardIdx;
-		cin >> cardIdx;
-		if (cardIdx < 0 || cardIdx >= static_cast<int>(cards.size())) {
-			cout << "Invalid card index.\n";
-			return false;
-		}
-
-		Card* card = cards[cardIdx].get();
-		std::string type = card->getTypeAsString();
-		CardPlayContext context; // default context
-
-		if (type == "Bomb") {
-			// choose enemy territory to bomb
-			cout << "\nChoose enemy territory to bomb:\n";
-			std::vector<Territory*> enemyTerr;
-			int i = 0;
-
-			list<Territory*> attackList = toAttack();
-			for (Territory* t : attackList) { // if you have such helper; otherwise build like toAttack()
-				cout << "  [" << i << "] " << t->getName()
-					<< " (owner: " << t->getOwner()->getName()
-					<< ", armies: " << t->getArmies() << ")\n";
-				enemyTerr.push_back(t);
-				++i;
-			}
-			if (enemyTerr.empty()) {
-				cout << "No enemy territories in range to bomb.\n";
+		case 1: { // Deploy
+			if (player->getArmies() <= 0) {
+				cout << "You have no reinforcement armies to deploy.\n";
 				return false;
 			}
-			int tIdx;
-			cin >> tIdx;
-			if (tIdx < 0 || tIdx >= static_cast<int>(enemyTerr.size())) {
-				cout << "Invalid target index.\n";
+
+			showTerritories();
+			cout << "Enter index of territory to deploy to: ";
+			int idx;
+			cin >> idx;
+
+			Territory* target = getTerritoryByIndex(idx);
+			if (!target) {
+				cout << "Invalid territory index.\n";
 				return false;
 			}
-			context.target = enemyTerr[tIdx];
+
+			cout << "Enter number of armies to deploy (max "
+				<< player->getArmies() << "): ";
+			int num;
+			cin >> num;
+
+			if (num <= 0 || num > player->getArmies()) {
+				cout << "Invalid army amount.\n";
+				return false;
+			}
+
+			player->issueOrder(new Deploy(player, target, num));
+			player->setArmies(player->getArmies() - num);
+			cout << "Issued Deploy(" << num << " -> " << target->getName() << ")\n";
+			return true;
 		}
-		// For brevity, you can similarly ask inputs for Airlift, Blockade, Negotiate
-		// depending on your CardPlayContext structure.
 
-		card->play(player, deck, hand, context);
-		cout << "Played card: " << type << "\n";
-		return true;
-	}
+		case 2: { // Advance
+			showTerritories();
+			cout << "Enter index of source territory: ";
+			int srcIdx;
+			cin >> srcIdx;
+			Territory* src = getTerritoryByIndex(srcIdx);
+			if (!src) {
+				cout << "Invalid source index.\n";
+				return false;
+			}
 
-	case 4:
-	default:
-		cout << "Done issuing orders for this turn.\n";
-		return false;
+			if (src->getArmies() <= 1) {
+				cout << "Source territory must have more than 1 army to advance.\n";
+				return false;
+			}
+
+			cout << "\nAdjacent territories from " << src->getName() << ":\n";
+			int idx = 0;
+			std::vector<Territory*> adjList;
+			for (Territory* adj : src->getAdjacentTerritories()) {
+				cout << "  [" << idx << "] "
+					<< adj->getName()
+					<< " (owner: "
+					<< (adj->getOwner() ? adj->getOwner()->getName() : "None")
+					<< ", armies: " << adj->getArmies() << ")\n";
+				adjList.push_back(adj);
+				++idx;
+			}
+
+			if (adjList.empty()) {
+				cout << "No adjacent territories to advance to.\n";
+				return false;
+			}
+
+			cout << "Enter index of destination territory: ";
+			int dstIdx;
+			cin >> dstIdx;
+			if (dstIdx < 0 || dstIdx >= static_cast<int>(adjList.size())) {
+				cout << "Invalid destination index.\n";
+				return false;
+			}
+
+			Territory* dst = adjList[dstIdx];
+
+			cout << "Enter number of armies to advance (max "
+				<< (src->getArmies() - 1) << "): ";
+			int num;
+			cin >> num;
+			if (num <= 0 || num >= src->getArmies()) {
+				cout << "Invalid army amount.\n";
+				return false;
+			}
+
+			player->issueOrder(new Advance(player, src, dst, num));
+			cout << "Issued Advance(" << num << " from "
+				<< src->getName() << " to " << dst->getName() << ")\n";
+			return true;
+		}
+
+		case 3: { // Play card
+			Hand* hand = player->getHand();
+			auto& cards = hand->getCards();
+
+			if (cards.empty()) {
+				cout << "You have no cards to play.\n";
+				return false;
+			}
+
+			cout << "\nYour cards:\n";
+			int idx = 0;
+
+			for (const auto& uptr : cards) {
+				Card* c = uptr.get();
+				cout << "  [" << idx << "] " << c->getTypeAsString() << "\n";
+				++idx;
+			}
+
+			cout << "Enter index of card to play: ";
+			int cardIdx;
+			cin >> cardIdx;
+			if (cardIdx < 0 || cardIdx >= static_cast<int>(cards.size())) {
+				cout << "Invalid card index.\n";
+				return false;
+			}
+
+			Card* card = cards[cardIdx].get();
+			std::string type = card->getTypeAsString();
+			CardPlayContext context; // default context
+
+			if (type == "Bomb") {
+				// choose enemy territory to bomb
+				cout << "\nChoose enemy territory to bomb:\n";
+				std::vector<Territory*> enemyTerr;
+				int i = 0;
+
+				list<Territory*> attackList = toAttack();
+				for (Territory* t : attackList) { // if you have such helper; otherwise build like toAttack()
+					cout << "  [" << i << "] " << t->getName()
+						<< " (owner: " << t->getOwner()->getName()
+						<< ", armies: " << t->getArmies() << ")\n";
+					enemyTerr.push_back(t);
+					++i;
+				}
+				if (enemyTerr.empty()) {
+					cout << "No enemy territories in range to bomb.\n";
+					return false;
+				}
+				int tIdx;
+				cin >> tIdx;
+				if (tIdx < 0 || tIdx >= static_cast<int>(enemyTerr.size())) {
+					cout << "Invalid target index.\n";
+					return false;
+				}
+				context.target = enemyTerr[tIdx];
+			}
+			// For brevity, you can similarly ask inputs for Airlift, Blockade, Negotiate
+			// depending on your CardPlayContext structure.
+
+			card->play(player, deck, hand, context);
+			cout << "Played card: " << type << "\n";
+			return true;
+		}
+
+		case 4:
+		default:
+			cout << "Done issuing orders for this turn.\n\n";
+			return false;
 	}
 }
 
@@ -312,7 +316,7 @@ list<Territory*> HumanPlayerStrategy::toAttack()
 	return attackList;
 }
 
-string HumanPlayerStrategy::getStrategyString()
+string HumanPlayerStrategy::getStrategyString() const
 {
 	return "Human";
 }
@@ -335,7 +339,7 @@ AggressivePlayerStrategy& AggressivePlayerStrategy::operator = (const Aggressive
 
 ostream& operator << (ostream& output, const AggressivePlayerStrategy& playerStrategy) //Stream Insertion Operator Overloading
 {
-	output << "Strategy Type: AggressivePlayerStrategy\n";
+	output << "Strategy Type: Aggressive\n";
 	return output;
 }
 
@@ -346,17 +350,24 @@ AggressivePlayerStrategy* AggressivePlayerStrategy::clone() //Clone function
 
 bool AggressivePlayerStrategy::issueOrder(Deck* deck)
 {
+	if (player->getTerritories().empty())
+	{
+		return false;
+	}
+
 	bool orderIssued = false;
 
-	Territory* strongest = toDefend().front();
+	Territory* strongest = toDefend().front(); //Finds the strongest territory owned
 
-	if (player->getArmies() > 0)
+	if (player->getArmies() > 0) //Checks if there are armies to deploy
 	{
+		//Deploys all armies to the strongest territory
 		player->issueOrder(new Deploy(player, strongest, player->getArmies()));
 		player->setArmies(0);
 		orderIssued = true;
 	}
 	
+	//Advances all possible armies from adjacent territories to the strongest territory
 	for (Territory* adjacent : strongest->getAdjacentTerritories())
 	{
 		if (adjacent->getOwner() == player)
@@ -366,13 +377,13 @@ bool AggressivePlayerStrategy::issueOrder(Deck* deck)
 		}
 	}
 
-	list<Territory*> attackList = toAttack();
+	list<Territory*> attackList = toAttack(); //Finds all possible territories to attack from the strongest territory
 	
-	if (!attackList.empty())
+	if (!attackList.empty()) //Checks if there are any territories to attack
 	{
 		Territory* strongestEnemy = nullptr;
 
-		for (Territory* enemy : attackList)
+		for (Territory* enemy : attackList) //Finds the strongest enemy territory
 		{
 			if (strongestEnemy == nullptr || strongestEnemy->getArmies() < enemy->getArmies())
 			{
@@ -380,6 +391,7 @@ bool AggressivePlayerStrategy::issueOrder(Deck* deck)
 			}
 		}
 
+		//Plays all possible Bomb cards on the strongest enemy territory
 		for (const auto& card : player->getHand()->getCards())
 		{
 			if (card->getTypeAsString() == "Bomb")
@@ -393,12 +405,14 @@ bool AggressivePlayerStrategy::issueOrder(Deck* deck)
 			}
 		}
 
+		//Calculates armies to attack with
 		int armyAmount = strongest->getArmies() / attackList.size();
-		int armyRemainder = strongest->getArmies() / attackList.size();
+		int armyRemainder = strongest->getArmies() % attackList.size();
 
-		while (!attackList.empty())
+		//Issues Advance orders to all territories in the attack list
+		while (!attackList.empty() && strongest->getArmies() > 1 && armyAmount > 0)
 		{
-			if (attackList.size() == 1)
+			if (attackList.size() == 1 && armyRemainder > 0)
 			{
 				armyAmount += (armyRemainder - 1);
 			}
@@ -414,9 +428,15 @@ bool AggressivePlayerStrategy::issueOrder(Deck* deck)
 
 list<Territory*> AggressivePlayerStrategy::toDefend()
 {
+	if (player->getTerritories().empty())
+	{
+		return {};
+	}
+
 	bool enemyAdjacent = false;
 	Territory* strongest = nullptr;
 
+	//Iterates through all territories owned by the player
 	for (Territory* territory : player->getTerritories())
 	{
 		if (strongest == nullptr)
@@ -426,6 +446,7 @@ list<Territory*> AggressivePlayerStrategy::toDefend()
 
 		bool hasEnemyNeighbours = false;
 
+		//Check if territory has any enemy neighbours
 		for (Territory* adjacent : territory->getAdjacentTerritories())
 		{
 			if (adjacent->getOwner() != player)
@@ -435,6 +456,7 @@ list<Territory*> AggressivePlayerStrategy::toDefend()
 			}
 		}
 
+		//Select the strongest territory with enemy neighbours
 		if (!enemyAdjacent && hasEnemyNeighbours)
 		{
 			strongest = territory;
@@ -451,12 +473,19 @@ list<Territory*> AggressivePlayerStrategy::toDefend()
 
 list<Territory*> AggressivePlayerStrategy::toAttack()
 {
+	if (player->getTerritories().empty())
+	{
+		return {};
+	}
+
 	list<Territory*> attackList;
 
 	Territory* attackFrom = toDefend().front();
 
+	//Iterates through all adjacent territories to find possible attack targets
 	for (Territory* adjacent : attackFrom->getAdjacentTerritories())
 	{
+		//Adds to attack list if the adjacent territory is not owned by the player
 		if (adjacent->getOwner() != player)
 		{
 			attackList.push_back(adjacent);
@@ -466,7 +495,7 @@ list<Territory*> AggressivePlayerStrategy::toAttack()
 	return attackList;
 }
 
-string AggressivePlayerStrategy::getStrategyString()
+string AggressivePlayerStrategy::getStrategyString() const
 {
 	return "Aggressive";
 }
@@ -489,7 +518,7 @@ BenevolentPlayerStrategy& BenevolentPlayerStrategy::operator = (const Benevolent
 
 ostream& operator << (ostream& output, const BenevolentPlayerStrategy& playerStrategy) //Stream Insertion Operator Overloading
 {
-	output << "Strategy Type: BenevolentPlayerStrategy\n";
+	output << "Strategy Type: Benevolent\n";
 	return output;
 }
 
@@ -500,14 +529,21 @@ BenevolentPlayerStrategy* BenevolentPlayerStrategy::clone() //Clone function
 
 bool BenevolentPlayerStrategy::issueOrder(Deck* deck)
 {
-	bool orderIssued = false;
-
-	if (player->getArmies() > 0)
+	if (player->getTerritories().empty())
 	{
+		return false;
+	}
+
+	bool orderIssued = false;
+	
+	if (player->getArmies() > 0) //Checks if there are armies to deploy
+	{
+		//Calculates armies to deploy to each territory in the defend list
 		list<Territory*> defendList = toDefend();
 		int armyAmount = player->getArmies() / defendList.size();
 		int armyRemainder = player->getArmies() % defendList.size();
 
+		//Issues Deploy orders to all territories in the defend list
 		while (!defendList.empty())
 		{
 			if (defendList.size() == 1)
@@ -525,6 +561,7 @@ bool BenevolentPlayerStrategy::issueOrder(Deck* deck)
 
 	Territory* strongest = nullptr;
 
+	//Finds the strongest territory owned
 	for (Territory* territory : player->getTerritories())
 	{
 		if (strongest == nullptr || strongest->getArmies() < territory->getArmies())
@@ -535,10 +572,17 @@ bool BenevolentPlayerStrategy::issueOrder(Deck* deck)
 
 	list<Territory*> defendList = toDefend();
 
+	//Plays all possible Reinforcement, Airlift, Blockade and Negotiate cards
 	for (const auto& card : player->getHand()->getCards())
 	{
+		if (!defendList.empty() && strongest == defendList.front())
+		{
+			defendList.pop_front();
+		}
+
 		if (card->getTypeAsString() == "Reinforcement")
 		{
+			//Plays Reinforcement card on the weakest territory
 			if (defendList.empty())
 			{
 				defendList = toDefend();
@@ -555,23 +599,28 @@ bool BenevolentPlayerStrategy::issueOrder(Deck* deck)
 		}
 		else if (card->getTypeAsString() == "Airlift")
 		{
+			//Plays Airlift card to move armies to the weakest territory
 			if (defendList.empty())
 			{
 				defendList = toDefend();
 			}
 
-			CardPlayContext& context = CardPlayContext();
-			context.source = strongest;
-			context.target = defendList.front();
-			context.armies = strongest->getArmies() / 2;
+			if (strongest != nullptr)
+			{
+				CardPlayContext& context = CardPlayContext();
+				context.source = strongest;
+				context.target = defendList.front();
+				context.armies = strongest->getArmies() / 2;
 
-			card->play(player, deck, player->getHand(), context);
+				card->play(player, deck, player->getHand(), context);
 
-			defendList.pop_front();
-			orderIssued = true;
+				defendList.pop_front();
+				orderIssued = true;
+			}
 		}
 		else if (card->getTypeAsString() == "Blockade")
 		{
+			//Plays Blockade card on the weakest territory
 			if (defendList.empty())
 			{
 				defendList = toDefend();
@@ -587,11 +636,13 @@ bool BenevolentPlayerStrategy::issueOrder(Deck* deck)
 		}
 		else if (card->getTypeAsString() == "Negotiate")
 		{
+			//Plays Negotiate card with an adjacent enemy player
 			CardPlayContext& context = CardPlayContext();
 			context.targetPlayer = player;
 
 			bool targetPlayerFound = false;
 
+			//Finds an adjacent enemy player
 			for (Territory* territory : player->getTerritories())
 			{
 				for (Territory* adjacentTerritory : territory->getAdjacentTerritories())
@@ -610,16 +661,20 @@ bool BenevolentPlayerStrategy::issueOrder(Deck* deck)
 				}
 			}
 
-			card->play(player, deck, player->getHand(), context);
+			if (targetPlayerFound)
+			{
+				card->play(player, deck, player->getHand(), context);
 
-			defendList.pop_front();
-			orderIssued = true;
+				defendList.pop_front();
+				orderIssued = true;
+			}
 		}
 	}
 
 	list<Territory*> attackList = toAttack();
 	int armyAmount = player->getArmies() / (attackList.size() + 1);
 
+	//Issues Advance orders to all territories neighbouring the strongest territory
 	while (!attackList.empty())
 	{
 		player->issueOrder(new Advance(player, strongest, attackList.front(), armyAmount));
@@ -632,8 +687,14 @@ bool BenevolentPlayerStrategy::issueOrder(Deck* deck)
 
 list<Territory*> BenevolentPlayerStrategy::toDefend()
 {
+	if (player->getTerritories().empty())
+	{
+		return {};
+	}
+
 	Territory* weakest = nullptr;
 
+	//Finds the weakest territory owned
 	for (Territory* territory : player->getTerritories())
 	{
 		if (weakest == nullptr || weakest->getArmies() > territory->getArmies())
@@ -644,6 +705,7 @@ list<Territory*> BenevolentPlayerStrategy::toDefend()
 
 	list<Territory*> defendList;
 
+	//Finds all territories with the same army count as the weakest territory
 	for (Territory* territory : player->getTerritories())
 	{
 		if (weakest->getArmies() == territory->getArmies())
@@ -657,8 +719,14 @@ list<Territory*> BenevolentPlayerStrategy::toDefend()
 
 list<Territory*> BenevolentPlayerStrategy::toAttack()
 {
+	if (player->getTerritories().empty())
+	{
+		return {};
+	}
+
 	Territory* strongest = nullptr;
 
+	//Finds the strongest territory owned
 	for (Territory* territory : player->getTerritories())
 	{
 		if (strongest == nullptr || strongest->getArmies() < territory->getArmies())
@@ -669,6 +737,7 @@ list<Territory*> BenevolentPlayerStrategy::toAttack()
 
 	Territory* weakestNeighbour = nullptr;
 
+	//Finds the weakest neighbouring territory
 	for (Territory* territory : strongest->getAdjacentTerritories())
 	{
 		if (territory->getOwner() != player)
@@ -684,6 +753,7 @@ list<Territory*> BenevolentPlayerStrategy::toAttack()
 
 	list<Territory*> advanceList;
 
+	//Finds all neighbouring territories with the same army count as the weakest neighbouring territory
 	if (weakestNeighbour != nullptr)
 	{
 		for (Territory* territory : strongest->getAdjacentTerritories())
@@ -703,7 +773,7 @@ list<Territory*> BenevolentPlayerStrategy::toAttack()
 	return advanceList;
 }
 
-string BenevolentPlayerStrategy::getStrategyString()
+string BenevolentPlayerStrategy::getStrategyString() const
 {
 	return "Benevolent";
 }
@@ -726,7 +796,7 @@ NeutralPlayerStrategy& NeutralPlayerStrategy::operator = (const NeutralPlayerStr
 
 ostream& operator << (ostream& output, const NeutralPlayerStrategy& playerStrategy) //Stream Insertion Operator Overloading
 {
-	output << "Strategy Type: NeutralPlayerStrategy\n";
+	output << "Strategy Type: Neutral\n";
 	return output;
 }
 
@@ -737,20 +807,23 @@ NeutralPlayerStrategy* NeutralPlayerStrategy::clone() //Clone function
 
 bool NeutralPlayerStrategy::issueOrder(Deck* deck)
 {
+	//Issues no orders
 	return false;
 }
 
 list<Territory*> NeutralPlayerStrategy::toDefend()
 {
+	//Defends no territories
 	return {};
 }
 
 list<Territory*> NeutralPlayerStrategy::toAttack()
 {
+	//Attacks no territories
 	return {};
 }
 
-string NeutralPlayerStrategy::getStrategyString()
+string NeutralPlayerStrategy::getStrategyString() const
 {
 	return "Neutral";
 }
@@ -773,7 +846,7 @@ CheaterPlayerStrategy& CheaterPlayerStrategy::operator = (const CheaterPlayerStr
 
 ostream& operator << (ostream& output, const CheaterPlayerStrategy& playerStrategy) //Stream Insertion Operator Overloading
 {
-	output << "Strategy Type: CheaterPlayerStrategy";
+	output << "Strategy Type: Cheater";
 	return output;
 }
 
@@ -803,13 +876,17 @@ bool CheaterPlayerStrategy::issueOrder(Deck* deck)
 	for(Territory* enemyTerr : toConquer) {
 		Player* previousOwner = enemyTerr->getOwner();
 		if (previousOwner != nullptr) {
+			if(previousOwner->getPlayerStrategy()->getStrategyString() == "Neutral") {
+				previousOwner->setPlayerStrategy(new AggressivePlayerStrategy(previousOwner));
+			}
+
 			previousOwner->removeTerritory(enemyTerr);
 		}
 		enemyTerr->setOwner(player);
 		player->addTerritory(enemyTerr);
 	}
 
-	std::cout << "Cheater Player " << player->getName() << " has conquered " << toConquer.size() << " adjacent territories! \n" << std::endl;
+	std::cout << player->getName() << " (Cheater Player) has conquered " << toConquer.size() << " adjacent territories! \n" << std::endl;
 
 	// We don't issue traditional orders, return false
 	return false;
@@ -844,7 +921,7 @@ list<Territory*> CheaterPlayerStrategy::toAttack()
 	return attackList;
 }
 
-string CheaterPlayerStrategy::getStrategyString()
+string CheaterPlayerStrategy::getStrategyString() const
 {
 	return "Cheater";
 }

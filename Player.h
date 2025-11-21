@@ -49,7 +49,7 @@ class Player //Player class represents a player playing the game
         list<Territory*> getTerritories(); //Returns list of territories
         Hand* getHand(); //Returns hand
         OrdersList* getOrdersList(); //Returns orders list
-        string getPlayerStrategy(); //Returns player strategy
+        PlayerStrategy* getPlayerStrategy(); //Returns player strategy
 
         //For tracking truces
         void addNegotiatedPlayer(Player* other);

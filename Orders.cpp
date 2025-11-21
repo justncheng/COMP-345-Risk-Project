@@ -242,20 +242,30 @@ void Advance::execute() // Executes the Advance order
     int defAfter = std::max(0, def - atkKills);
     int atkAfter = std::max(0, atk - defKills);
 
+    if (defender != NULL)
+    {
+        if (defender->getPlayerStrategy()->getStrategyString() == "Neutral") {
+            defender->setPlayerStrategy(new AggressivePlayerStrategy(defender));
+        }
+    }
+
     if (defAfter == 0 && atkAfter > 0) {
         // conquer: survivors occupy, transfer ownership
         target->setArmies(atkAfter);
+
+        if (defender != NULL)
+        {
+            target->getOwner()->removeTerritory(target);
+        }
+
         target->setOwner(issuer);
+        issuer->addTerritory(target);
         setEffect("attacked " + target->getName() + ": conquered with " + std::to_string(atkAfter) + " surviving.");
     }
     else {
         // defender holds
         target->setArmies(defAfter);
         setEffect("attacked " + target->getName() + ": failed (def " + std::to_string(defAfter) + " left).");
-    }
-
-    if (target->getOwner()->getPlayerStrategy() == "Neutral") {
-        target->getOwner()->setPlayerStrategy(new AggressivePlayerStrategy(target->getOwner()));
     }
 
     setName("Advance (executed)");
@@ -359,7 +369,7 @@ void Bomb::execute() // Executes the Bomb order
     int removed = cur / 2; // remove half (floor)
     target->setArmies(cur - removed);
 
-    if (target->getOwner()->getPlayerStrategy() == "Neutral") {
+    if (target->getOwner()->getPlayerStrategy()->getStrategyString() == "Neutral") {
         target->getOwner()->setPlayerStrategy(new AggressivePlayerStrategy(target->getOwner()));
     }
 

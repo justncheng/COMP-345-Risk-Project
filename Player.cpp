@@ -16,6 +16,7 @@ Player::Player(string name, PlayerStrategy* playerStrategy) //Parameterized Cons
     hand = new Hand(); //Creates empty hand
     ordersList = new OrdersList(); //Creates empty orders list
     this->playerStrategy = playerStrategy; //Sets player strategy
+	playerStrategy->setPlayer(this); //Sets the player for the strategy
 }
 
 Player::Player(const Player& player) //Copy Constructor
@@ -123,7 +124,7 @@ ostream& operator << (ostream &output, const Player &player) //Stream Insertion 
     output << "\n" + player.name + "'s Hand: " << *(player.hand); //Outputs the player's hand
     output << "\n" + player.name + "'s Orders List: " << *(player.ordersList); //Outputs the player's orders list
     output << player.name << "'s armies: " << player.armies << "\n"; //Outputs the player's armies
-    output << player.name << "'s " << player.playerStrategy << "\n"; //Outputs the player's strategy
+    output << player.name << "'s " << *(player.playerStrategy) << "\n"; //Outputs the player's strategy
 
     return output;
 }
@@ -223,9 +224,9 @@ OrdersList* Player::getOrdersList()
     return ordersList;
 }
 
-string Player::getPlayerStrategy()
+PlayerStrategy* Player::getPlayerStrategy()
 {
-    return playerStrategy->getStrategyString();
+    return playerStrategy;
 }
 
 void Player::addNegotiatedPlayer(Player* other) {

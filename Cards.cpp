@@ -22,6 +22,11 @@ CardType Card::getType() const {
 }
 
 string Card::getTypeAsString() const {
+    if (this == nullptr)
+    {
+        return "NULLCardType";
+    }
+
     switch (type) {
     case CardType::Bomb: return "Bomb";
     case CardType::Reinforcement: return "Reinforcement";

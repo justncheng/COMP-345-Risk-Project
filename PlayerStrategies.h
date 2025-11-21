@@ -25,9 +25,12 @@ class PlayerStrategy
 		virtual list<Territory*> toDefend() = 0; //Returns a list of territories to defend
 		virtual list<Territory*> toAttack() = 0; //Returns a list of territories to attack
 
-		//Accessor Method (Getter)
+		//Mutator Methods (Setters)
+		void setPlayer(Player* player);
+
+		//Accessor Methods (Getters)
 		Player* getPlayer(); //Returns player
-		virtual string getStrategyString() = 0; //Returns the strategy as a string
+		virtual string getStrategyString() const; //Returns the strategy as a string
 
 	protected:
 		//Data member
@@ -48,7 +51,7 @@ class HumanPlayerStrategy : public PlayerStrategy
 		list<Territory*> toDefend() override; //Returns a list of territories to defend
 		list<Territory*> toAttack() override; //Returns a list of territories to attack
 
-		string getStrategyString() override; //Returns the strategy as a string
+		string getStrategyString() const override; //Returns the strategy as a string
 };
 
 class AggressivePlayerStrategy : public PlayerStrategy
@@ -65,7 +68,7 @@ class AggressivePlayerStrategy : public PlayerStrategy
 		list<Territory*> toDefend() override; //Returns a list of territories to defend
 		list<Territory*> toAttack() override; //Returns a list of territories to attack
 
-		string getStrategyString() override; //Returns the strategy as a string
+		string getStrategyString() const override; //Returns the strategy as a string
 };
 
 class BenevolentPlayerStrategy : public PlayerStrategy
@@ -82,7 +85,7 @@ class BenevolentPlayerStrategy : public PlayerStrategy
 		list<Territory*> toDefend() override; //Returns a list of territories to defend
 		list<Territory*> toAttack() override; //Returns a list of territories to advance towards
 
-		string getStrategyString() override; //Returns the strategy as a string
+		string getStrategyString() const override; //Returns the strategy as a string
 };
 
 class NeutralPlayerStrategy : public PlayerStrategy
@@ -99,7 +102,7 @@ class NeutralPlayerStrategy : public PlayerStrategy
 		list<Territory*> toDefend() override; //Returns a list of territories to defend
 		list<Territory*> toAttack() override; //Returns a list of territories to attack
 
-		string getStrategyString() override; //Returns the strategy as a string
+		string getStrategyString() const override; //Returns the strategy as a string
 };
 
 class CheaterPlayerStrategy : public PlayerStrategy
@@ -116,5 +119,5 @@ class CheaterPlayerStrategy : public PlayerStrategy
 		list<Territory*> toDefend() override; //Returns a list of territories to defend
 		list<Territory*> toAttack() override; //Returns a list of territories to attack
 
-		string getStrategyString() override; //Returns the strategy as a string
+		string getStrategyString() const override; //Returns the strategy as a string
 };
