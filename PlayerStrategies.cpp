@@ -79,7 +79,7 @@ HumanPlayerStrategy* HumanPlayerStrategy::clone() //Clone function
 bool HumanPlayerStrategy::issueOrder(Deck* deck)
 {
 	// Basic menu for human interaction
-	cout << "\n=== Human Player (" << player->getName() << ") - Issue Order ===\n";
+	cout << "=== Human Player (" << player->getName() << ") - Issue Order ===\n";
 
 	cout << "Reinforcement armies available: " << player->getArmies() << "\n";
 
@@ -370,7 +370,7 @@ bool AggressivePlayerStrategy::issueOrder(Deck* deck)
 	//Advances all possible armies from adjacent territories to the strongest territory
 	for (Territory* adjacent : strongest->getAdjacentTerritories())
 	{
-		if (adjacent->getOwner() == player)
+		if (adjacent->getOwner() == player && adjacent->getArmies() > 1)
 		{
 			player->issueOrder(new Advance(player, adjacent, strongest, (adjacent->getArmies() - 1)));
 			orderIssued = true;
@@ -412,7 +412,7 @@ bool AggressivePlayerStrategy::issueOrder(Deck* deck)
 		//Issues Advance orders to all territories in the attack list
 		while (!attackList.empty() && strongest->getArmies() > 1 && armyAmount > 0)
 		{
-			if (attackList.size() == 1 && armyRemainder > 0)
+			if (attackList.size() == 1)
 			{
 				armyAmount += (armyRemainder - 1);
 			}
@@ -677,6 +677,11 @@ bool BenevolentPlayerStrategy::issueOrder(Deck* deck)
 	//Issues Advance orders to all territories neighbouring the strongest territory
 	while (!attackList.empty())
 	{
+		if (armyAmount == 0)
+		{
+			break;
+		}
+
 		player->issueOrder(new Advance(player, strongest, attackList.front(), armyAmount));
 		attackList.pop_front();
 		orderIssued = true;

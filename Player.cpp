@@ -108,7 +108,7 @@ ostream& operator << (ostream &output, const Player &player) //Stream Insertion 
 {
     //Outputs the player's information
 
-    output << "\n" << player.name << "'s Territories: ";
+    output << player.name << "'s Territories: ";
 
     //Outputs the player's list of territories as a comma-separated list
     for(Territory* territory : player.territories)

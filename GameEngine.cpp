@@ -240,13 +240,11 @@ void GameEngine::mainGameLoop(CommandProcessor*& commandProcessor, Map*& map, ve
     while (!gameover) {
         currentTurn++;
 		cout << "\nTurn " << currentTurn << "\n-------\n";
-		cout << "Game status:\n";
+		cout << "Game status:\n\n";
 
         for (Player* p : *players) {
             cout << *p;
         }
-
-        cout << "\n";
 
         // Clear all negotiate effects from the previous turn
         for (Player* p : *players) {
