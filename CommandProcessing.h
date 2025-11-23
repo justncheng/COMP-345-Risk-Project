@@ -102,11 +102,11 @@ class CommandProcessor : public Subject, public ILoggable  {
         string getStateString() const;
 
 		static bool parseTournamentCommand(
-		    const string& cmdStr,
-		    	vector<std::string>& maps,
-		    	vector<std::string>& strategies,
-		    	int& games,
-			  	int& maxTurns
+	    const string& cmdStr,
+	    vector<string>& maps,
+	    vector<string>& strategies,
+	    int& games,
+	    int& maxTurns
 		);
 
 };
