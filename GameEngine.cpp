@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <vector>
+#include <random>
+#include <iomanip>
 
 // default constructor
 GameEngine::GameEngine() {
@@ -384,3 +387,174 @@ ostream& operator << (ostream& os, const GameEngine& gEngine) {
 string GameEngine::stringToLog() const {
     return "GameEngine transitioned to state: " + getStateString();
 }
+void GameEngine::runTournament(const vector<string>& maps,
+                               const vector<string>& strategies,
+                               int gamesPerMap,
+                               int maxTurns)
+{
+    if (maps.empty() || strategies.size() < 2 || gamesPerMap <= 0 || maxTurns <= 0) {
+        cout << "[Tournament] Invalid parameters.\n";
+        return;
+    }
+
+    // results[mapIndex][gameIndex] = winning strategy or "Draw"
+    vector<vector<string>> results(
+        maps.size(),
+        vector<string>(gamesPerMap, "Draw")
+    );
+
+    cout << "=============================================\n";
+    cout << "            TOURNAMENT MODE START            \n";
+    cout << "=============================================\n\n";
+
+    // Helper: winner is player who owns all map territories, or nullptr
+    auto getWinner = [](Map* map) -> Player* {
+        Player* owner = nullptr;
+        const vector<Territory*>& territories = map->getTerritories();
+        if (territories.empty()) return nullptr;
+
+        for (Territory* t : territories) {
+            Player* tOwner = t->getOwner();
+            if (tOwner == nullptr) return nullptr;  // some unowned -> no winner yet
+            if (owner == nullptr) owner = tOwner;
+            else if (owner != tOwner) return nullptr; // more than one owner
+        }
+        return owner;
+    };
+
+    random_device rd;
+    mt19937 rng(rd());
+
+    for (size_t mi = 0; mi < maps.size(); ++mi) {
+        const string& mapFile = maps[mi];
+        cout << "[Tournament] Map: " << mapFile << "\n";
+
+        for (int gi = 0; gi < gamesPerMap; ++gi) {
+            cout << "  > Game " << (gi + 1) << " on " << mapFile << "\n";
+
+            // ----- Load and validate map -----
+            Map* map = MapLoader::loadMap(mapFile);
+            if (!map || !map->validate()) {
+                cout << "    ! Failed to load/validate map " << mapFile << ". Marking game as Draw.\n";
+                results[mi][gi] = "Draw";
+                if (map) delete map;
+                continue;
+            }
+
+            // ----- Create deck -----
+            Deck* deck = new Deck();
+            for (int k = 0; k < 4; ++k) {
+                deck->addCard(unique_ptr<Card>(new Card(CardType::Reinforcement)));
+                deck->addCard(unique_ptr<Card>(new Card(CardType::Bomb)));
+                deck->addCard(unique_ptr<Card>(new Card(CardType::Blockade)));
+                deck->addCard(unique_ptr<Card>(new Card(CardType::Airlift)));
+                deck->addCard(unique_ptr<Card>(new Card(CardType::Diplomacy)));
+            }
+
+            // ----- Create players with strategies -----
+            vector<Player*>* players = new vector<Player*>();
+            players->reserve(strategies.size());
+
+            for (size_t si = 0; si < strategies.size(); ++si) {
+                const string& sName = strategies[si];
+
+                PlayerStrategy* strat = nullptr;
+                // Human is NOT allowed in tournament (CommandProcessor will enforce that)
+                if (sName == "Aggressive")      strat = new AggressivePlayerStrategy(nullptr);
+                else if (sName == "Benevolent") strat = new BenevolentPlayerStrategy(nullptr);
+                else if (sName == "Neutral")    strat = new NeutralPlayerStrategy(nullptr);
+                else if (sName == "Cheater")    strat = new CheaterPlayerStrategy(nullptr);
+                else                            strat = new AggressivePlayerStrategy(nullptr); // fallback
+
+                string playerName = "P" + to_string(si + 1) + "-" + sName;
+                Player* p = new Player(playerName, strat);
+                players->push_back(p);
+            }
+
+            // ----- Randomly assign territories to players -----
+            vector<Territory*> terrVec = map->getTerritories();
+            shuffle(terrVec.begin(), terrVec.end(), rng);
+
+            for (size_t ti = 0; ti < terrVec.size(); ++ti) {
+                Player* owner = players->at(ti % players->size());
+                Territory* t = terrVec[ti];
+                owner->addTerritory(t);
+                t->setOwner(owner);
+            }
+
+            // ----- Initial armies + 2 cards each -----
+            for (Player* p : *players) {
+                p->setArmies(50);
+                if (!deck->isEmpty()) p->getHand()->addCard(deck->draw());
+                if (!deck->isEmpty()) p->getHand()->addCard(deck->draw());
+            }
+
+            // ----- Fresh engine for this game -----
+            GameEngine engine;
+
+            int turn = 0;
+            string winnerStr = "Draw";
+
+            while (turn < maxTurns) {
+                // Clear negotiations each turn
+                for (Player* p : *players) {
+                    p->clearNegotiatedPlayers();
+                }
+
+                engine.reinforcementPhase(map, players);
+                engine.issueOrdersPhase(players, deck);
+                engine.executeOrdersPhase(players);
+
+                Player* winner = getWinner(map);
+                if (winner != nullptr) {
+                    PlayerStrategy* ps = winner->getPlayerStrategy();
+                    winnerStr = ps ? ps->getStrategyString() : winner->getName();
+                    cout << "    -> Winner: " << winnerStr
+                         << " (" << winner->getName() << ")\n";
+                    break;
+                }
+
+                ++turn;
+            }
+
+            if (winnerStr == "Draw") {
+                cout << "    -> Game reached max turns (" << maxTurns << "). Result: Draw.\n";
+            }
+
+            results[mi][gi] = winnerStr;
+
+            // ----- Cleanup for this game -----
+            for (Player* p : *players) {
+                delete p;
+            }
+            delete players;
+            delete deck;
+            delete map;
+        }
+    }
+
+    // ----- Print final tournament results table -----
+    cout << "\n=============================================\n";
+    cout << "            TOURNAMENT RESULTS               \n";
+    cout << "=============================================\n";
+
+    cout << left << setw(20) << "Map";
+    for (int gi = 0; gi < gamesPerMap; ++gi) {
+        cout << setw(15) << ("Game " + to_string(gi + 1));
+    }
+    cout << "\n";
+
+    for (size_t mi = 0; mi < maps.size(); ++mi) {
+        cout << left << setw(20) << maps[mi];
+        for (int gi = 0; gi < gamesPerMap; ++gi) {
+            cout << setw(15) << results[mi][gi];
+        }
+        cout << "\n";
+    }
+
+    cout << "=============================================\n\n";
+
+    // Log end of tournament if you have a LoggingObserver attached
+    Notify(this);
+}
+
