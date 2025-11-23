@@ -101,6 +101,14 @@ class CommandProcessor : public Subject, public ILoggable  {
 
         string getStateString() const;
 
+		static bool parseTournamentCommand(
+		    const string& cmdStr,
+		    	vector<std::string>& maps,
+		    	vector<std::string>& strategies,
+		    	int& games,
+			  	int& maxTurns
+		);
+
 };
 
 // FileCommandProcessorAdapter Class Definition
