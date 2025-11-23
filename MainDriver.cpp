@@ -10,5 +10,6 @@
 int main(int argc, char* argv[]) 
 {
     testPlayerStrategies();
+    testTournament();
     return 0;
 }
