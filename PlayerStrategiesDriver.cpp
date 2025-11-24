@@ -57,6 +57,11 @@ void testPlayerStrategies()
 
 	cout << "\n=== Player Strategies Testing Complete ===\n\n";
 
+	for (Player* player : *players)
+	{
+		delete player;
+	}
+
 	delete commandProcessor;
 	delete map;
 	delete players;

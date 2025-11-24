@@ -245,27 +245,3 @@ void testMainGameLoop() {
     delete players;
     delete deck;
 }
-void testTournament() {
-    cout << "=== Tournament Mode Testing ===\n\n";
-
-    GameEngine engine;
-
-    // Use a real map file name from your project
-    vector<string> maps;
-    maps.push_back("TestMap.map");
-
-    // Only AI strategies (NO Human)
-    vector<string> strategies;
-    strategies.push_back("Aggressive");
-    strategies.push_back("Benevolent");
-    strategies.push_back("Neutral");
-    strategies.push_back("Cheater");
-
-    int gamesPerMap = 3;
-    int maxTurns    = 20;
-
-    engine.runTournament(maps, strategies, gamesPerMap, maxTurns);
-
-    cout << "=== Tournament Mode Testing Complete ===\n";
-}
-

@@ -150,9 +150,10 @@ bool HumanPlayerStrategy::issueOrder(Deck* deck)
 				return false;
 			}
 
+			cout << "\n";
 			player->issueOrder(new Deploy(player, target, num));
 			player->setArmies(player->getArmies() - num);
-			cout << "Issued Deploy(" << num << " -> " << target->getName() << ")\n";
+			cout << "Issued Deploy(" << num << " -> " << target->getName() << ")\n\n";
 			return true;
 		}
 
@@ -209,9 +210,10 @@ bool HumanPlayerStrategy::issueOrder(Deck* deck)
 				return false;
 			}
 
+			cout << "\n";
 			player->issueOrder(new Advance(player, src, dst, num));
 			cout << "Issued Advance(" << num << " from "
-				<< src->getName() << " to " << dst->getName() << ")\n";
+				<< src->getName() << " to " << dst->getName() << ")\n\n";
 			return true;
 		}
 
@@ -350,7 +352,7 @@ bool HumanPlayerStrategy::issueOrder(Deck* deck)
 				context.target = target;
 			}
 			// ---- NEGOTIATE ----
-			else if (type == "Negotiate") {
+			else if (type == "Diplomacy") {
 				// Collect adjacent enemy players
 				std::set<Player*> enemyPlayersSet;
 				for (Territory* myTerr : player->getTerritories()) {
@@ -385,8 +387,9 @@ bool HumanPlayerStrategy::issueOrder(Deck* deck)
 				context.targetPlayer = enemyPlayers[pIdx];
 			}
 
+			cout << "\n";
 			card->play(player, deck, hand, context);
-			cout << "Played card: " << type << "\n";
+			cout << "Played card: " << type << "\n\n";
 			return true;
 		}
 
@@ -978,7 +981,7 @@ bool CheaterPlayerStrategy::issueOrder(Deck* deck)
 	// Collect all adjacent enemy territories
 	for (Territory* myTerr : player->getTerritories()) {
 		for(Territory* adjTerr : myTerr->getAdjacentTerritories()) {
-			if (adjTerr->getOwner() != player) {
+			if (adjTerr->getOwner() != player && !player->hasNegotiatedWith(adjTerr->getOwner()) && !adjTerr->getOwner()->hasNegotiatedWith(player)) {
 				toConquer.insert(adjTerr);
 			}
 		}
@@ -992,7 +995,7 @@ bool CheaterPlayerStrategy::issueOrder(Deck* deck)
 	for(Territory* enemyTerr : toConquer) {
 		Player* previousOwner = enemyTerr->getOwner();
 		if (previousOwner != nullptr) {
-			if(previousOwner->getPlayerStrategy()->getStrategyString() == "Neutral") {
+			if (previousOwner->getPlayerStrategy()->getStrategyString() == "Neutral") {
 				previousOwner->setPlayerStrategy(new AggressivePlayerStrategy(previousOwner));
 			}
 
