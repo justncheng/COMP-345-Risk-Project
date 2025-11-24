@@ -271,8 +271,119 @@ bool HumanPlayerStrategy::issueOrder(Deck* deck)
 				}
 				context.target = enemyTerr[tIdx];
 			}
-			// For brevity, you can similarly ask inputs for Airlift, Blockade, Negotiate
-			// depending on your CardPlayContext structure.
+
+			// ---- REINFORCEMENT ----
+			else if (type == "Reinforcement") {
+				cout << "\nChoose a territory to reinforce:\n";
+				showTerritories();
+
+				cout << "Enter index of territory to reinforce: ";
+				int tIdx;
+				cin >> tIdx;
+
+				Territory* target = getTerritoryByIndex(tIdx);
+				if (!target) {
+					cout << "Invalid territory index.\n";
+					return false;
+				}
+
+				context.target = target;
+				// Use same value style as your Benevolent strategy
+				context.armies = 3; // or 5, depending on your card rules
+			}
+			// ---- AIRLIFT ----
+			else if (type == "Airlift") {
+				cout << "\nChoose source and target territories for Airlift:\n";
+				showTerritories();
+
+				cout << "Enter index of source territory: ";
+				int srcIdx;
+				cin >> srcIdx;
+				Territory* src = getTerritoryByIndex(srcIdx);
+				if (!src) {
+					cout << "Invalid source index.\n";
+					return false;
+				}
+
+				if (src->getArmies() <= 1) {
+					cout << "Source territory must have more than 1 army to airlift.\n";
+					return false;
+				}
+
+				cout << "Enter index of target territory: ";
+				int dstIdx;
+				cin >> dstIdx;
+				Territory* dst = getTerritoryByIndex(dstIdx);
+				if (!dst) {
+					cout << "Invalid target index.\n";
+					return false;
+				}
+
+				cout << "Enter number of armies to airlift (max "
+					<< (src->getArmies() - 1) << "): ";
+				int num;
+				cin >> num;
+				if (num <= 0 || num >= src->getArmies()) {
+					cout << "Invalid army amount.\n";
+					return false;
+				}
+
+				context.source = src;
+				context.target = dst;
+				context.armies = num;
+			}
+			// ---- BLOCKADE ----
+			else if (type == "Blockade") {
+				cout << "\nChoose a territory to blockade:\n";
+				showTerritories();
+
+				cout << "Enter index of territory to blockade: ";
+				int tIdx;
+				cin >> tIdx;
+
+				Territory* target = getTerritoryByIndex(tIdx);
+				if (!target) {
+					cout << "Invalid territory index.\n";
+					return false;
+				}
+
+				context.target = target;
+			}
+			// ---- NEGOTIATE ----
+			else if (type == "Negotiate") {
+				// Collect adjacent enemy players
+				std::set<Player*> enemyPlayersSet;
+				for (Territory* myTerr : player->getTerritories()) {
+					for (Territory* adj : myTerr->getAdjacentTerritories()) {
+						if (adj->getOwner() != nullptr &&
+							adj->getOwner() != player) {
+							enemyPlayersSet.insert(adj->getOwner());
+						}
+					}
+				}
+
+				if (enemyPlayersSet.empty()) {
+					cout << "No adjacent enemy players to negotiate with.\n";
+					return false;
+				}
+
+				std::vector<Player*> enemyPlayers(enemyPlayersSet.begin(), enemyPlayersSet.end());
+
+				cout << "\nChoose a player to negotiate with:\n";
+				for (size_t i = 0; i < enemyPlayers.size(); ++i) {
+					cout << "  [" << i << "] " << enemyPlayers[i]->getName() << "\n";
+				}
+
+				cout << "Enter index of player: ";
+				int pIdx;
+				cin >> pIdx;
+				if (pIdx < 0 || pIdx >= static_cast<int>(enemyPlayers.size())) {
+					cout << "Invalid player index.\n";
+					return false;
+				}
+
+				context.targetPlayer = enemyPlayers[pIdx];
+			}
 
 			card->play(player, deck, hand, context);
 			cout << "Played card: " << type << "\n";

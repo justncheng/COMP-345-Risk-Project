@@ -123,6 +123,10 @@ ostream& operator<<(ostream& os, const Deck& deck) {
     return os;
 }
 
+bool Deck::isEmpty() const {
+    return cards.empty();
+}
+
 // ---------------------- Hand ----------------------------
 
 Hand::Hand(const Hand& other) {

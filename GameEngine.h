@@ -53,6 +53,9 @@ class GameEngine : public Subject, public ILoggable{
         // stream inssertion operator overload 
         friend ostream& operator << (ostream& os, const GameEngine& gEngine);
 
+		// Tournament mode function
+        void runTournament(const vector<string>& maps, const vector<string>& strategies, int gamesPerMap, int maxTurns);
+
         // For testing/debugging
         string getStateString() const;
 };

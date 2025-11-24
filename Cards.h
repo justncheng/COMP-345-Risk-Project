@@ -92,6 +92,9 @@ public:
     unique_ptr<Card> draw();                ///< Draws a random card (removes from deck)
     int size() const;                       ///< Returns the number of cards in the deck
 
+	// Checks if the deck is empty
+	bool isEmpty() const;
+
     friend ostream& operator<<(ostream& os, const Deck& deck);  ///< Stream print of deck
 private:
     vector<unique_ptr<Card>> cards;         ///< Internal list of cards

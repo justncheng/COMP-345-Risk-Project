@@ -306,6 +306,9 @@ void GameEngine::issueOrdersPhase(vector<Player*>*& players, Deck*& deck) {
     while (ordersIssued) {   // Continue until no orders are issued in a full pass
         ordersIssued = false;
         for (Player* player : *players) {
+			if (player->getTerritories().empty()) { // Skip eliminated players
+                continue;
+            }
             if(!firstTurn && player->getPlayerStrategy()->getStrategyString() != "Human")
                 continue;
             if (player->issueOrder(deck)) // Issues one order this pass
